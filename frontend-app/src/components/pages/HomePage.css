@@ -1,161 +1,157 @@
-/* === POWER RANGERS PALETTE === */
-:root {
-  --red: #D4181F;
-  --pink: #E755AF;
-  --blue: #2B4CB3;
-  --yellow: #F4D000;
-  --black: #0A0A0A;
-  --white: #FFFFFF;
+/* === IMPORT FONTS (Modern Professional) === */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@500;700&display=swap');
 
-  --text-light: #F5F5F5;
+/* === PROFESSIONAL GRID THEME === */
+:root {
+  --accent-blue: #2b77ff;
+  --accent-yellow: #f4d000;
+  --accent-pink: #e755af;
+
+  --bg-dark: #0b0d10;
+  --bg-light: #1a1d21;
 
   --radius: 12px;
-  --shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  --neon-soft: 0 0 22px rgba(43, 119, 255, 0.35);
 }
+
 html, body, #root {
   margin: 0;
   padding: 0;
-  width: 100%;
+  background: var(--bg-dark);
+  color: white;
+  font-family: "Inter", sans-serif;
 }
-/* === BACKGROUND IMAGE VERSION === */
+
+/* === MODERN BACKGROUND WITH GLASS EFFECT === */
 .home-container {
   position: relative;
- 
   min-height: 100vh;
- 
-  /* 🖼️ POWER RANGERS IMAGE BACKGROUND */
-  background-image: url("../../assets/powerrangers-bg.jpg");
+
+  background: 
+      linear-gradient(
+        rgba(0, 0, 0, 0.65), 
+        rgba(0, 0, 0, 0.85)
+      ),
+      url("../../assets/powerranger-bg.jpg");
+  
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
-
-  /* Dark overlay so text is readable */
-  background-color: rgba(0, 0, 0, 0.55);
-  background-blend-mode: darken;
-
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  text-align: center;
-  color: var(--white);
 }
 
-/* === MORPHIN GRID OVERLAY === */
+/* SUBTLE TECH GRID LINES */
 .home-container::before {
   content: "";
   position: absolute;
   inset: 0;
-
-  /* subtle grid lines */
   background-image:
-    linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px);
-
-  background-size: 65px 65px;
-  mix-blend-mode: overlay;
-  z-index: 0;
+    repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,0.06) 0,
+      rgba(255,255,255,0.06) 1px,
+      transparent 1px,
+      transparent 35px
+    );
+  opacity: 0.15;
 }
 
-/* === Soft Glow Overlay === */
-.home-container::after {
-  content: "";
+/* LIGHT ENERGY GLOWS */
+.decor-blue {
   position: absolute;
-  inset: 0;
-  background: radial-gradient(circle,
-    rgba(255,255,255,0.06) 0%,
-    transparent 70%
-  );
-  z-index: 0;
-}
-
-/* === Decorative Energy Balls === */
-.decor {
-  position: absolute;
+  width: 350px;
+  height: 350px;
+  background: var(--accent-blue);
   border-radius: 50%;
-  opacity: 0.22;
-  filter: blur(35px);
-  z-index: 0;
-}
-
-.decor-purple {
-  background: var(--blue);
-  width: 250px;
-  height: 250px;
-  top: 5%;
-  left: -60px;
+  filter: blur(130px);
+  opacity: 0.23;
+  top: -80px;
+  left: -120px;
 }
 
 .decor-yellow {
-  background: var(--yellow);
-  width: 300px;
-  height: 300px;
-  bottom: 0;
-  right: -80px;
+  position: absolute;
+  width: 380px;
+  height: 380px;
+  background: var(--accent-yellow);
+  border-radius: 50%;
+  filter: blur(150px);
+  opacity: 0.20;
+  bottom: -100px;
+  right: -140px;
 }
 
-/* === Content === */
+/* === CONTENT === */
 .content {
   position: relative;
-  z-index: 2;
-  max-width: 750px;
+  z-index: 10;
+  text-align: center;
+  max-width: 900px;
   padding: 2rem;
 }
 
-/* === Title === */
+/* === PROFESSIONAL TITLE === */
 .title {
-  font-size: 3.8rem;
-  font-weight: 900;
-  color: var(--yellow);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 2.5rem;
   font-family: "Orbitron", sans-serif;
-  text-shadow: 0 0 18px rgba(0, 0, 0, 0.8);
+  font-size: 3.8rem;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 3px;
+
+  background: linear-gradient(to right, var(--accent-yellow), white);
+  -webkit-background-clip: text;
+  color: transparent;
+
+  text-shadow: 0 0 50px rgba(255,255,255,0.15);
+  margin-bottom: 2.2rem;
 }
 
-/* === Buttons === */
+/* === CTA BUTTONS === */
 .buttons {
   display: flex;
   justify-content: center;
-  gap: 2rem;
-  margin-top: 2rem;
+  gap: 1.5rem;
+  margin-top: 2.2rem;
 }
 
+/* MODERN BUTTON BASE */
 .btn {
+  padding: 1rem 3.2rem;
+  font-size: 1.2rem;
+  font-weight: 600;
   text-decoration: none;
-  padding: 1rem 2.8rem;
   border-radius: var(--radius);
-  font-weight: 700;
-  font-size: 1.4rem;
-  cursor: pointer;
   transition: 0.25s ease;
+  border: 1px solid transparent;
 }
 
-/* LOGIN (Blue Ranger) */
+/* LOGIN = Blue theme */
 .login-btn {
-  background-color: var(--blue);
-  color: var(--white);
-  border: 2px solid var(--white);
+  background: var(--accent-blue);
+  color: white;
+  box-shadow: var(--neon-soft);
 }
 
 .login-btn:hover {
-  background-color: transparent;
-  color: var(--white);
-  border-color: var(--blue);
-  transform: translateY(-4px);
+  background: transparent;
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
 }
 
-/* REGISTER (Pink Ranger) */
+/* REGISTER = Pink theme */
 .register-btn {
-  background-color: var(--pink);
-  color: var(--white);
+  background: var(--accent-pink);
+  color: white;
+  box-shadow: 0 0 20px rgba(231, 85, 175, 0.3);
 }
 
 .register-btn:hover {
-  background-color: var(--red);
-  transform: translateY(-4px);
-  box-shadow: var(--shadow);
+  background: transparent;
+  border-color: var(--accent-pink);
+  color: var(--accent-pink);
 }
 
 /* RESPONSIVE */
@@ -166,11 +162,11 @@ html, body, #root {
 
   .buttons {
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.3rem;
   }
 
   .btn {
     width: 100%;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
   }
 }

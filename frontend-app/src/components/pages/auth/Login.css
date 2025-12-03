@@ -1,122 +1,208 @@
-/* === Power Rangers Login Page === */
+/* === IMPORT FONTS === */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@500;700&display=swap');
 
+/* === SHARED THEME FROM HOMEPAGE === */
 :root {
-  --red: #D4181F;
-  --pink: #E755AF;
-  --blue: #2B4CB3;
-  --yellow: #F4D000;
-  --black: #0A0A0A;
-  --white: #FFFFFF;
+  --accent-blue: #2b77ff;
+  --accent-yellow: #f4d000;
+  --accent-pink: #e755af;
 
-  --bg-violet-dark: #2e1834;
-  --bg-violet-mid: #4B0082;
-  --gold: #CC9901;
-  --pale-gold: #e6c676;
-
-  --card-glass: rgba(255, 255, 255, 0.1);
+  --bg-dark: #0b0d10;
 
   --radius: 12px;
-  --shadow: 0 0 25px rgba(0, 0, 0, 0.45);
+  --neon-soft: 0 0 22px rgba(43, 119, 255, 0.35);
 }
 
-/* Page Layout */
+/* === PAGE CONTAINER USING SAME BACKGROUND AS HOMEPAGE === */
 .login-container {
+  position: relative;
   min-height: 100vh;
+
+  /* SAME BG AS HOME */
+ 
+  background:
+  linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)),
+  url("/src/assets/powerranger-bg.jpg");
+background-size: cover;
+background-position: center;
+background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--bg-violet-dark), var(--bg-violet-mid));
-  padding: 1rem;
-  font-family: "Poppins", sans-serif;
+
+  padding: 1.5rem;
+  overflow: hidden;
+  font-family: "Inter", sans-serif;
 }
 
-/* Login Card */
+/* === SAME GRID OVERLAY AS HOMEPAGE === */
+.login-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,0.06) 0px,
+      rgba(255,255,255,0.06) 1px,
+      transparent 1px,
+      transparent 38px
+    );
+
+  opacity: 0.18;
+  z-index: 1;
+}
+
+/* === SAME ENERGY LIGHT EFFECTS === */
+.energy-blue {
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  background: var(--accent-blue);
+
+  border-radius: 50%;
+  filter: blur(130px);
+  opacity: 0.25;
+
+  top: -80px;
+  left: -130px;
+  z-index: 1;
+}
+
+.energy-yellow {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: var(--accent-yellow);
+
+  border-radius: 50%;
+  filter: blur(150px);
+  opacity: 0.22;
+
+  bottom: -90px;
+  right: -150px;
+  z-index: 1;
+}
+
+/* === LOGIN CARD === */
 .login-card {
-  background: var(--card-glass);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--gold);
-  padding: 2.8rem 2rem;
+  position: relative;
+  z-index: 5;
+
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(18px);
+
   border-radius: var(--radius);
-  width: 100%;
+  border: 1px solid rgba(255,255,255,0.18);
+
+  padding: 2.8rem 2.2rem;
   max-width: 400px;
-  box-shadow: var(--shadow);
+  width: 100%;
+
+  box-shadow: 0 0 35px rgba(0,0,0,0.55),
+              0 0 20px rgba(255,255,255,0.12);
 }
 
-/* Heading */
+/* === TITLE (MATCHING HOMEPAGE STYLE) === */
 .login-title {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--gold);
+  font-family: "Orbitron", sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
   text-align: center;
+
+  background: linear-gradient(to right, var(--accent-yellow), #fff);
+  -webkit-background-clip: text;
+  color: transparent;
+
   margin-bottom: 2rem;
-  text-shadow: 0 0 10px var(--gold);
+  letter-spacing: 2px;
+
+  text-shadow: 0 0 25px rgba(255,255,255,0.18);
 }
 
-/* Labels */
+/* === FORM LABELS === */
 .login-label {
   display: block;
-  margin-bottom: 0.5rem;
-  color: var(--pale-gold);
+  margin-bottom: 0.45rem;
+  color: rgba(255,255,255,0.85);
+
+  font-size: 0.95rem;
   font-weight: 600;
-  font-size: 0.9rem;
+  letter-spacing: 0.3px;
 }
 
-/* Inputs */
+/* === INPUT FIELDS === */
 .login-input {
   width: 100%;
-  padding: 0.85rem 1rem;
+  padding: 0.9rem 1rem;
+
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.15);
-  border: 1px solid var(--pale-gold);
-  color: var(--gold);
+  border: 1px solid rgba(255,255,255,0.22);
+
+  color: white;
   font-size: 0.95rem;
+
   margin-bottom: 1.5rem;
-  transition: 0.3s ease;
+
+  transition: 0.25s ease-in-out;
+}
+
+.login-input::placeholder {
+  color: rgba(255,255,255,0.55);
 }
 
 .login-input:focus {
-  box-shadow: 0 0 10px var(--pale-gold);
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255,255,255,0.25);
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 12px rgba(43,119,255,0.35);
 }
 
-/* Error Message */
-.login-error {
-  color: #ff4b4b;
-  margin-bottom: 1rem;
-  font-size: 0.85rem;
-}
-
-/* Login Button */
+/* === LOGIN BUTTON === */
 .login-btn {
   width: 100%;
   padding: 1rem;
-  border-radius: 8px;
+
+  background: var(--accent-blue);
+  color: white;
+
   border: none;
-  background: var(--gold);
-  color: var(--bg-violet-dark);
-  font-size: 1rem;
+  border-radius: 8px;
+
+  font-size: 1.1rem;
   font-weight: 700;
+
   cursor: pointer;
-  transition: 0.25s ease;
-  box-shadow: 0 0 12px var(--gold);
+  transition: 0.25s;
+
+  box-shadow: var(--neon-soft);
 }
 
 .login-btn:hover {
-  background: var(--yellow);
+  background: transparent;
+  border: 1px solid var(--accent-blue);
+  color: var(--accent-blue);
   transform: translateY(-2px);
 }
 
-/* Register Link */
+/* === REGISTER LINK === */
 .login-register {
-  margin-top: 1.5rem;
+  margin-top: 1.6rem;
   text-align: center;
-  font-size: 0.9rem;
-  color: var(--pale-gold);
+
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.75);
 }
 
 .login-register span {
-  color: var(--gold);
-  text-decoration: underline;
+  color: var(--accent-yellow);
   cursor: pointer;
   font-weight: 700;
+
+  transition: 0.25s;
+}
+
+.login-register span:hover {
+  text-shadow: 0 0 12px rgba(255, 230, 0, 0.75);
 }

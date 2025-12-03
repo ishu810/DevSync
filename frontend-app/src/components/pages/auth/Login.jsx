@@ -42,6 +42,8 @@ export default function Login() {
 
   return (
     <div className="login-container">
+      <div className="energy-blue"></div>
+<div className="energy-yellow"></div>
       <div className="login-card">
         <h2 className="login-title">🌟 Welcome Back</h2>
 

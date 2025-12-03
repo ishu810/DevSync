@@ -1,0 +1,190 @@
+/* === IMPORT FONTS === */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@500;700&display=swap');
+
+/* === GLOBAL THEME === */
+:root {
+  --accent-blue: #2b77ff;
+  --accent-yellow: #f4d000;
+  --card-bg: rgba(255, 255, 255, 0.07);
+  --border-light: rgba(255, 255, 255, 0.17);
+  --white-light: rgba(255, 255, 255, 0.55);
+  --neon-soft: 0 0 22px rgba(43, 119, 255, 0.35);
+  --radius: 12px;
+}
+
+/* === PAGE CONTAINER (same as login) === */
+.register-container {
+  position: relative;
+  min-height: 100vh;
+
+  background:
+    linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)),
+    url("/src/assets/powerranger-bg.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 1.5rem;
+  font-family: "Inter", sans-serif;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* GRID OVERLAY (same as login/home) */
+.register-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,0.06) 0px,
+      rgba(255,255,255,0.06) 1px,
+      transparent 1px,
+      transparent 38px
+    );
+
+  opacity: 0.18;
+  z-index: 1;
+}
+
+/* ENERGY GLOW */
+.register-blue,
+.register-yellow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(150px);
+  opacity: 0.25;
+  z-index: 1;
+}
+
+.register-blue {
+  width: 350px;
+  height: 350px;
+  background: var(--accent-blue);
+  top: -80px;
+  left: -110px;
+}
+
+.register-yellow {
+  width: 380px;
+  height: 380px;
+  background: var(--accent-yellow);
+  bottom: -110px;
+  right: -120px;
+}
+
+/* === REGISTER CARD === */
+.register-card {
+  position: relative;
+  z-index: 5;
+
+  background: var(--card-bg);
+  backdrop-filter: blur(18px);
+
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  height:600px;
+  padding: 2.6rem 2.2rem;
+  width: 100%;
+  max-width: 400px;
+
+  box-shadow: 0 0 35px rgba(0,0,0,0.55),
+              0 0 20px rgba(255,255,255,0.12);
+}
+
+/* === TITLE === */
+.register-title {
+  font-family: "Orbitron", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+
+  text-align: center;
+
+  background: linear-gradient(to right, var(--accent-yellow), white);
+  -webkit-background-clip: text;
+  color: transparent;
+
+  margin-bottom: 2rem;
+  letter-spacing: 2px;
+}
+
+/* === LABELS === */
+.register-label {
+  color: var(--white-light);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.45rem;
+  display: block;
+}
+
+/* === INPUTS & SELECT === */
+.register-input,
+.register-select {
+  width: 100%;
+  padding: 0.9rem;
+  border-radius: 8px;
+
+  background: rgba(255,255,255,0.15);
+  border: 1px solid var(--border-light);
+  color: white;
+
+  font-size: 0.95rem;
+  margin-bottom: 1.3rem;
+  transition: 0.25s ease;
+}
+
+.register-input::placeholder {
+  color: rgba(255,255,255,0.55);
+}
+
+.register-input:focus,
+.register-select:focus {
+  background: rgba(255,255,255,0.25);
+  border-color: var(--accent-blue);
+  box-shadow: var(--neon-soft);
+}
+
+/* === BUTTON === */
+.register-btn {
+  width: 100%;
+  padding: 1rem;
+
+  background: var(--accent-blue);
+  color: white;
+
+  border: none;
+  border-radius: 8px;
+
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  transition: 0.25s ease;
+  box-shadow: var(--neon-soft);
+}
+
+.register-btn:hover {
+  background: transparent;
+  color: var(--accent-blue);
+  border: 1px solid var(--accent-blue);
+}
+
+/* === FOOTER LINK === */
+.register-footer {
+  text-align: center;
+  margin-top: 1.4rem;
+  color: rgba(255,255,255,0.75);
+}
+
+.register-footer span {
+  color: var(--accent-yellow);
+  cursor: pointer;
+  font-weight: 700;
+}

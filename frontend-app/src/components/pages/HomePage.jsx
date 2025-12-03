@@ -15,7 +15,7 @@ export default function HomePage() {
 
       {/* Main content */}
       <div className="content">
-        <h1 className="title">🎪 Welcome to Smart Complaint Portal</h1>
+        <h2 className="title">Welcome to Fault Analyzer</h2>
      
         <div className="buttons">
           <Link to="/login" className="btn login-btn">

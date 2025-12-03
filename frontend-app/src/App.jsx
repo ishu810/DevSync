@@ -1,4 +1,5 @@
 import React from "react";
+import logo from "./assets/logo.png"; 
 import {
   BrowserRouter as Router,
   Routes,
@@ -114,9 +115,9 @@ function Navbar() {
         top: 0,
         left: 0,
         right: 0,
-        height: "72px", // keep in sync with CSS --nav-height
+        height: "72px",
         display: "flex",
-        justifyContent: "space-between",
+        justifyContent: "flex-end",
         alignItems: "center",
         padding: "0 24px",
         background: "rgba(0, 0, 0, 0.14)",
@@ -127,21 +128,28 @@ function Navbar() {
         zIndex: 99999,
       }}
     >
-      <Link
-        to="/"
+
+      {/* 🔹 Centered LOGO */}
+      <div
         style={{
-          fontWeight: "900",
-          fontSize: "1.9rem",
-          color: COLORS.yellow,
-          textDecoration: "none",
-          fontFamily: "'Orbitron', sans-serif",
-          textShadow: "0 0 12px rgba(244,208,0,0.75)",
+          position: "absolute",
+          left: "50%",
+          transform: "translateX(-50%)",
         }}
       >
-        POWER COMPLAINT SYSTEM
-      </Link>
+        <img
+          src={logo}
+          alt="Logo"
+          style={{
+            height: "70px",
+            width:"800px",
+            objectFit: "contain",
+            filter: "drop-shadow(0 0 4px rgba(255,255,255,0.6))",
+          }}
+        />
+      </div>
 
-      <AuthButtons />
+   
     </nav>
   );
 }
