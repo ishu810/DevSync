@@ -76,7 +76,7 @@ const AdminDashboard = () => {
 
       {/* SIDEBAR */}
       <aside className="w-64 bg-white/5 backdrop-blur-xl border-r border-white/10 p-6 z-20">
-        <h1 className="font-orbitron text-2xl text-yellow-400 text-center tracking-wider">
+        <h1 className="font-orbitron text-2xl text-yellow-400 text-center tracking-wider mt-20">
           Admin Panel
         </h1>
 
@@ -99,7 +99,7 @@ const AdminDashboard = () => {
       <main className="flex-1 p-10 z-10">
 
         {/* ASSIGN COMPLAINT CARD */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-6 mb-10">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 mt-10 shadow-2xl rounded-2xl p-6 mb-10">
           <h2 className="font-orbitron text-xl mb-4 text-yellow-400">Assign Complaints</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

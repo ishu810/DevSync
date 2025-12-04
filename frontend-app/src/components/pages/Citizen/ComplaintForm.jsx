@@ -26,7 +26,7 @@ const ComplaintForm = () => {
         const { latitude, longitude } = pos.coords;
         setFormData((prev) => ({ ...prev, latitude, longitude }));
       },
-      (err) => alert("Please enable location access.")
+      () => alert("Please enable location access.")
     );
   }, []);
 
@@ -91,9 +91,9 @@ const ComplaintForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-violetDark to-violetMid p-4 font-poppins">
+    <div className="min-h-screen flex justify-center items-center p-4 font-poppins">
       <div className="bg-white rounded-xl p-8 shadow-2xl w-full max-w-md">
-        <h2 className="text-center text-2xl font-semibold text-violetDark mb-6">
+        <h2 className="text-center text-2xl font-semibold text-green-900 mb-6">
           Submit a Complaint
         </h2>
 
@@ -101,7 +101,7 @@ const ComplaintForm = () => {
 
           {/* Title */}
           <div>
-            <label className="text-violetDark font-medium">Title</label>
+            <label className="text-green-900 font-medium">Title</label>
             <input
               type="text"
               name="title"
@@ -109,13 +109,15 @@ const ComplaintForm = () => {
               onChange={handleChange}
               placeholder="Complaint Title"
               required
-              className="w-full p-3 border border-violetDark rounded-lg focus:ring-2 focus:ring-violetMid outline-none"
+              className="w-full p-3 border border-green-700 rounded-lg 
+              text-black placeholder-gray-600
+              focus:ring-2 focus:ring-green-500 outline-none"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="text-violetDark font-medium">Description</label>
+            <label className="text-green-900 font-medium">Description</label>
             <textarea
               name="description"
               value={formData.description}
@@ -123,18 +125,21 @@ const ComplaintForm = () => {
               rows="5"
               required
               placeholder="Complaint Description"
-              className="w-full p-3 border border-violetDark rounded-lg focus:ring-2 focus:ring-violetMid outline-none"
+              className="w-full p-3 border border-green-700 rounded-lg 
+              text-black placeholder-gray-600
+              focus:ring-2 focus:ring-green-500 outline-none"
             />
           </div>
 
           {/* Category */}
           <div>
-            <label className="text-violetDark font-medium">Category</label>
+            <label className="text-green-900 font-medium">Category</label>
             <select
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className="w-full p-3 border border-violetDark rounded-lg focus:ring-2 focus:ring-violetMid outline-none"
+              className="w-full p-3 border border-green-700 rounded-lg 
+              text-black bg-white focus:ring-2 focus:ring-green-500 outline-none"
             >
               <option>Infrastructure</option>
               <option>Sanitation</option>
@@ -146,12 +151,13 @@ const ComplaintForm = () => {
 
           {/* Priority */}
           <div>
-            <label className="text-violetDark font-medium">Priority</label>
+            <label className="text-green-900 font-medium">Priority</label>
             <select
               name="priority"
               value={formData.priority}
               onChange={handleChange}
-              className="w-full p-3 border border-violetDark rounded-lg"
+              className="w-full p-3 border border-green-700 rounded-lg 
+              text-black bg-white"
             >
               <option>Low</option>
               <option>Medium</option>
@@ -161,27 +167,27 @@ const ComplaintForm = () => {
 
           {/* Address */}
           <div>
-            <label className="text-violetDark font-medium">Address (optional)</label>
+            <label className="text-green-900 font-medium">Address (optional)</label>
             <input
               type="text"
               name="address"
               value={formData.address}
               onChange={handleChange}
               placeholder="Your Address"
-              className="w-full p-3 border border-violetDark rounded-lg"
+              className="w-full p-3 border border-green-700 rounded-lg 
+              text-black placeholder-gray-600"
             />
           </div>
 
-          {/* Photo Upload */}
+          {/* Photo */}
           <div>
-            <label className="text-violetDark font-medium">Photo (optional)</label>
+            <label className="text-green-900 font-medium">Photo (optional)</label>
             <input
               type="file"
               accept="image/*"
               onChange={handlePhotoChange}
               className="mt-1"
             />
-
             {preview && (
               <img
                 src={preview}
@@ -193,16 +199,17 @@ const ComplaintForm = () => {
 
           {/* Location */}
           {formData.latitude && (
-            <p className="text-violetDark">
+            <p className="text-green-900">
               Location: {formData.latitude.toFixed(5)}, {formData.longitude.toFixed(5)}
             </p>
           )}
 
-          {/* Refresh Location Button */}
+          {/* Refresh Button */}
           <button
             type="button"
             onClick={refreshLocation}
-            className="w-full bg-gold text-violetDark py-2 rounded-lg font-semibold hover:opacity-90 transition"
+            className="w-full bg-green-300 text-green-900 py-2 rounded-lg 
+            font-semibold hover:bg-green-400 transition"
           >
             Confirm / Update Location
           </button>
@@ -210,10 +217,12 @@ const ComplaintForm = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-violetDark text-white py-3 rounded-lg font-bold hover:bg-violetMid transition"
+            className="w-full bg-green-800 text-white py-3 rounded-lg 
+            font-bold hover:bg-green-600 transition"
           >
             Submit Complaint
           </button>
+
         </form>
       </div>
     </div>

@@ -76,10 +76,7 @@ const ComplaintSchema = new Schema(
   { timestamps: true }
 );
 
-// Auto-update the updated_at timestamp
-ComplaintSchema.pre('save', function (next) {
-  this.updated_at = Date.now();
-  next();
-});
+
+
 
 export default model('Complaint', ComplaintSchema);
