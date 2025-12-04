@@ -1,3 +1,20 @@
 
 
+
 @import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-inter: "Inter", sans-serif;
+    --font-orbitron: "Orbitron", sans-serif;
+  }
+}
+
+@layer utilities {
+  .font-inter {
+    font-family: var(--font-inter);
+  }
+  .font-orbitron {
+    font-family: var(--font-orbitron);
+  }
+}

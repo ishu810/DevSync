@@ -1,20 +1,11 @@
 import Complaint from '../models/Complaint.js';
 import { sendNotification, sendEmail } from '../firebase/SendNotification.js';
 import User  from '../models/User.js';
-
-/**
- * , sendEmail
- * Submit Complaint — Citizen creates a new complaint
- * Handles: text fields + optional photo + location
- */
 export const submitComplaint = async (req, res) => {
   try {
-    // Ensure user info exists
     if (!req.user || !req.user.id) {
       return res.status(401).json({ success: false, message: 'User not authenticated' });
     }
-
-    // Role check: only citizen/user can submit
     if (!'citizen'.includes(req.user.role)) {
       return res.status(403).json({ success: false, message: 'Only citizens can submit complaints' });
     }
@@ -38,7 +29,7 @@ export const submitComplaint = async (req, res) => {
     const photo_url = req.file?.path || '';
 
     const complaintData = {
-      submitted_by: req.user.id, // must match JWT payload user.id
+      submitted_by: req.user.id,
       title: title.trim(),
       description: description.trim(),
       category,
@@ -69,9 +60,7 @@ export const submitComplaint = async (req, res) => {
   }
 };
 
-/**
- * Get Complaints — returns complaints based on role
- */
+
 export const getComplaints = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
