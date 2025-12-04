@@ -1,5 +1,6 @@
 import Complaint from '../models/Complaint.js';
 // import { sendNotification, sendEmail } from '../firebase/SendNotification.js';
+
 import User from '../models/User.js';
 
 /**
@@ -107,7 +108,7 @@ export const assignComplaint = async (req, res) => {
 
     const complaint = await Complaint.findByIdAndUpdate(
       complaintId,
-      { assigned_to: staffId, status: 'ASSIGNED', updated_at: Date.now() },
+      { assigned_to: staffId, status: 'ASSIGNED', updatedAt: Date.now() },
       { new: true }
     )
       .populate('assigned_to', 'username email fcmToken') // Populate fcmToken as well
@@ -170,7 +171,7 @@ export const updateComplaintStatus = async (req, res) => {
 
     complaint.status = status;
     complaint.remarks = remarks || complaint.remarks;
-    complaint.updated_at = Date.now();
+    complaint.updatedAt = Date.now();
     await complaint.save();
 
     return res.status(200).json({ success: true, message: 'Status updated successfully', complaint });

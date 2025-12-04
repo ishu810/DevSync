@@ -79,14 +79,7 @@ export function AuthButtons() {
         </>
       ) : (
         <>
-          <Link
-            to={`/dashboard/${user?.role}`}
-            style={buttonBase}
-            onMouseEnter={(e) => (e.target.style.background = COLORS.pink)}
-            onMouseLeave={(e) => (e.target.style.background = "rgba(0,0,0,0.28)")}
-          >
-            Dashboard
-          </Link>
+          
 
           <button
             onClick={handleLogout}
@@ -148,6 +141,7 @@ function Navbar() {
           }}
         />
       </div>
+      <AuthButtons/>
 
    
     </nav>

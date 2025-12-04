@@ -23,12 +23,13 @@ export default function CitizenDashboard() {
         navigate("/login");
       }
     };
+
     verifyUser();
   }, [navigate]);
 
   if (loading)
     return (
-      <p className="text-center text-green-400 mt-20 text-lg font-semibold">
+      <p className="text-center text-[#7CFFD8] mt-20 text-lg font-semibold">
         Checking authorization...
       </p>
     );
@@ -36,59 +37,52 @@ export default function CitizenDashboard() {
   return (
     <div className="flex min-h-screen text-white font-inter relative overflow-hidden">
 
-      {/* 🌿 PURE GRADIENT BACKGROUND (NO IMAGE) */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-green-900/40 to-black"></div>
+      {/* ⚡ UPGRADED NEON EMERALD BACKGROUND */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#00160D] via-[#003A20] to-[#001008]" />
 
-      {/* Texture grid overlay */}
-      <div className="absolute inset-0 opacity-[0.08] bg-[url('./assets/grid.webp')] pointer-events-none"></div>
+      {/* GRID OVERLAY */}
+      <div className="absolute inset-0 opacity-[0.10] bg-[url('./assets/grid.webp')] bg-cover pointer-events-none"></div>
 
-      {/* Neon green energy glows */}
-      <div className="absolute w-[350px] h-[350px] bg-green-500 blur-[150px] opacity-25 top-[-120px] left-[-100px]"></div>
-      <div className="absolute w-[300px] h-[300px] bg-green-300 blur-[140px] opacity-20 bottom-[-100px] right-[-80px]"></div>
+      {/* Soft Neon Glow — Mint + Lime */}
+      <div className="absolute w-[380px] h-[380px] bg-[#3CFF8F] blur-[110px] opacity-15 top-[-140px] left-[-120px]" />
+      <div className="absolute w-[320px] h-[320px] bg-[#B4FF5A] blur-[110px] opacity-10 bottom-[-100px] right-[-100px]" />
 
       {/* SIDEBAR */}
-      <aside className="w-64 mt-20 z-20 bg-black/40 backdrop-blur-xl border-r border-green-500/30 p-6">
-
-        <h2 className="font-orbitron text-3xl text-green-400 tracking-wide mb-10">
+      <aside className="w-64 z-20 bg-[#00160D]/70 backdrop-blur-xl
+        border-r border-[#3CFF8F]/30 p-6 rounded-r-2xl
+        shadow-[0_0_18px_#3CFF8F]/30">
+        
+        <h2 className="font-orbitron text-3xl font-bold text-[#3CFF8F] tracking-wide mt-13  mb-10
+          ">
           Dashboard
         </h2>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
 
+          {/* My Complaints */}
           <button
-            className={`w-full px-4 py-2 text-left rounded-lg transition
-              ${
-                activeMenu === "dashboard"
-                  ? "bg-green-500/30 border border-green-400 shadow-lg"
-                  : "bg-white/10 hover:bg-white/20 border border-transparent"
-              }`}
-            onClick={() => setActiveMenu("dashboard")}
-          >
-            Dashboard
-          </button>
-
-          <button
-            className={`w-full px-4 py-2 text-left rounded-lg transition
-              ${
-                activeMenu === "complaint-form"
-                  ? "bg-green-500/30 border border-green-400 shadow-lg"
-                  : "bg-white/10 hover:bg-white/20 border border-transparent"
-              }`}
-            onClick={() => setActiveMenu("complaint-form")}
-          >
-            Submit Complaint
-          </button>
-
-          <button
-            className={`w-full px-4 py-2 text-left rounded-lg transition
+            className={`w-full px-5 py-3 text-left rounded-lg transition font-semibold tracking-wide
               ${
                 activeMenu === "lifecycle"
-                  ? "bg-green-500/30 border border-green-400 shadow-lg"
-                  : "bg-white/10 hover:bg-white/20 border border-transparent"
+                  ? "bg-[#3CFF8F]/20 border border-[#3CFF8F] shadow-[0_0_12px_#3CFF8F]/30"
+                  : "bg-white/5 hover:bg-white/10"
               }`}
             onClick={() => setActiveMenu("lifecycle")}
           >
             My Complaints
+          </button>
+
+          {/* Submit Complaint */}
+          <button
+            className={`w-full px-5 py-3 text-left rounded-lg transition font-semibold tracking-wide
+              ${
+                activeMenu === "complaint-form"
+                  ? "bg-[#7CFFD8]/20 border border-[#7CFFD8] shadow-[0_0_12px_#7CFFD8]/30"
+                  : "bg-white/5 hover:bg-white/10"
+              }`}
+            onClick={() => setActiveMenu("complaint-form")}
+          >
+            Submit Complaint
           </button>
 
         </div>
@@ -97,31 +91,38 @@ export default function CitizenDashboard() {
       {/* MAIN CONTENT */}
       <main className="flex-1 p-10 z-20">
 
-        {activeMenu === "dashboard" && (
-          <div className="bg-black/30 border border-green-500/30 rounded-xl shadow-xl backdrop-blur-xl p-6">
-            <h2 className="font-orbitron text-2xl text-green-400">
+        {/* Submit Complaint Panel */}
+        {activeMenu === "complaint-form" && (
+          <div className="bg-[#00160D]/70 border border-[#7CFFD8]/25 rounded-xl
+            shadow-[0_0_18px_#7CFFD8]/25 backdrop-blur-xl p-8">
+            <ComplaintForm neon />
+          </div>
+        )}
+
+        {/* Complaint History Panel */}
+        {activeMenu === "lifecycle" && (
+          <div
+  className="
+    bg-white/10
+    backdrop-blur-xl
+    rounded-3xl
+    border border-white/20
+    shadow-[0_8px_32px_rgba(0,0,0,0.37)]
+    p-10
+    mt-10
+  "
+>
+            
+            <h2 className="font-orbitron text-3xl text-[#3CFF8F] mb-4
+              ">
               Welcome, {username}! ⚡
             </h2>
-            <p className="text-green-100 mt-2">
-              Use the sidebar to submit complaints or track your reports.
-            </p>
-          </div>
-        )}
 
-        {activeMenu === "complaint-form" && (
-          <div className="bg-black/30 border border-green-500/30 rounded-xl shadow-xl backdrop-blur-xl p-6">
-            <ComplaintForm />
-          </div>
-        )}
-
-        {activeMenu === "lifecycle" && (
-          <div className="bg-black/30 border border-green-500/30 rounded-xl shadow-xl backdrop-blur-xl p-6">
             <ComplaintLifecycle />
           </div>
         )}
 
       </main>
-
     </div>
   );
 }

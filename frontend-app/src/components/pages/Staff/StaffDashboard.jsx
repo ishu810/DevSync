@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../../api/axiosInstance";
 
-const COLORS = {
-  violetDark: "#2e1834",
-  violetMid: "#4B0082",
-  gold: "#CC9901",
-  white: "#ffffff",
-};
-
-const StaffDashboard = () => {
+export default function StaffDashboard() {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
@@ -37,16 +30,19 @@ const StaffDashboard = () => {
     try {
       setUpdating(complaintId);
       const token = localStorage.getItem("token");
+
       await axiosInstance.patch(
         "/api/complaints/status",
         { complaintId, status: newStatus },
         { headers: { "x-auth-token": token } }
       );
+
       setComplaints((prev) =>
         prev.map((c) =>
           c._id === complaintId ? { ...c, status: newStatus } : c
         )
       );
+
       setUpdating(null);
     } catch (err) {
       console.error("Error updating status:", err);
@@ -55,209 +51,140 @@ const StaffDashboard = () => {
     }
   };
 
-  // Filter, search, and sort complaints
   const filteredComplaints = complaints
-    .filter((c) => 
+    .filter((c) =>
       (filters.status === "All" || c.status === filters.status) &&
       (filters.priority === "All" || c.priority === filters.priority) &&
-      (c.title.toLowerCase().includes(search.toLowerCase()) ||
-       c.category.toLowerCase().includes(search.toLowerCase()))
+      (c.title.toLowerCase().includes(search.toLowerCase()))
     )
     .sort((a, b) => {
       if (sortBy === "latest") return new Date(b.createdAt) - new Date(a.createdAt);
       if (sortBy === "oldest") return new Date(a.createdAt) - new Date(b.createdAt);
       if (sortBy === "priority") {
-        const priorityOrder = { High: 3, Medium: 2, Low: 1 };
-        return priorityOrder[b.priority] - priorityOrder[a.priority];
+        const order = { High: 3, Medium: 2, Low: 1 };
+        return order[b.priority] - order[a.priority];
       }
-      return 0;
     });
 
   if (loading)
-    return <p style={{ color: COLORS.gold }}>Loading complaints...</p>;
+    return (
+      <p className="text-center mt-20 text-[#7AFF57] font-semibold text-lg">
+        Loading complaints...
+      </p>
+    );
 
   return (
-    <div
-      style={{
-        padding: "2rem",
-        fontFamily: "Poppins, sans-serif",
-        background: COLORS.violetDark,
-        minHeight: "100vh",
-        color: COLORS.white,
-      }}
-    >
-      <h2 style={{ color: COLORS.gold, marginBottom: "1rem" }}>
+    <div className="min-h-screen bg-gradient-to-br from-[#00160D] via-[#003A20] to-[#000d05] text-white p-6">
+
+      {/* Title */}
+      <h2 className="text-3xl font-orbitron font-bold text-[#7AFF57] mb-6 drop-shadow- mt-18">
         Staff Dashboard
       </h2>
 
-      {/* Search and Filters */}
-      <div
-        style={{
-          display: "flex",
-          gap: "1rem",
-          marginBottom: "1.5rem",
-          flexWrap: "wrap",
-        }}
-      >
+      {/* Filters Section */}
+      <div className="flex flex-wrap gap-4 mb-6 bg-[#003A20]/20 backdrop-blur-xl p-4 rounded-xl border border-[#39FF14]/30 shadow-[0_0_9px_#39FF14]/30">
+
+        {/* Search */}
         <input
           type="text"
-          placeholder="Search by title or category"
+          placeholder="Search by title..."
+          className="flex-1 px-4 py-2 rounded-lg bg-black/40 border border-[#39FF14]/40 focus:border-[#39FF14] outline-none text-[#A6FFCB]"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          style={{
-            padding: "0.5rem",
-            borderRadius: "6px",
-            border: "none",
-            flex: "1",
-            minWidth: "200px",
-          }}
         />
 
-        <div>
-          <label>Status: </label>
-          <select
-            value={filters.status}
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, status: e.target.value }))
-            }
-            style={{
-              padding: "0.4rem 0.6rem",
-              borderRadius: "6px",
-              border: "none",
-              background: COLORS.gold,
-              color: COLORS.violetDark,
-              fontWeight: "bold",
-              cursor: "pointer",
-            }}
-          >
-            {["All", "OPEN", "ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].map(
-              (status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              )
-            )}
-          </select>
-        </div>
+        {/* Status Filter */}
+        <select
+          value={filters.status}
+          onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+          className="px-4 py-2 rounded-lg bg-[#39FF14]/30 text-white font-semibold shadow-lg border border-[#39FF14]/40"
+        >
+          {["All", "OPEN", "ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].map((s) => (
+            <option key={s} value={s} className="bg-black text-white">
+              {s}
+            </option>
+          ))}
+        </select>
 
-        <div>
-          <label>Priority: </label>
-          <select
-            value={filters.priority}
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, priority: e.target.value }))
-            }
-            style={{
-              padding: "0.4rem 0.6rem",
-              borderRadius: "6px",
-              border: "none",
-              background: COLORS.gold,
-              color: COLORS.violetDark,
-              fontWeight: "bold",
-              cursor: "pointer",
-            }}
-          >
-            {["All", "Low", "Medium", "High"].map((priority) => (
-              <option key={priority} value={priority}>
-                {priority}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Priority Filter */}
+        <select
+          value={filters.priority}
+          onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
+          className="px-4 py-2 rounded-lg bg-[#39FF14]/30 text-white font-semibold shadow-lg border border-[#39FF14]/40"
+        >
+          {["All", "Low", "Medium", "High"].map((p) => (
+            <option key={p} className="bg-black text-white">
+              {p}
+            </option>
+          ))}
+        </select>
 
-        <div>
-          <label>Sort: </label>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            style={{
-              padding: "0.4rem 0.6rem",
-              borderRadius: "6px",
-              border: "none",
-              background: COLORS.gold,
-              color: COLORS.violetDark,
-              fontWeight: "bold",
-              cursor: "pointer",
-            }}
-          >
-            <option value="latest">Latest</option>
-            <option value="oldest">Oldest</option>
-            <option value="priority">Priority</option>
-          </select>
-        </div>
+        {/* Sort */}
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="px-4 py-2 rounded-lg bg-[#39FF14]/30 text-white font-semibold shadow-lg border border-[#39FF14]/40"
+        >
+          <option value="latest" className="bg-black text-white">Latest</option>
+          <option value="oldest" className="bg-black text-white">Oldest</option>
+          <option value="priority" className="bg-black text-white">Priority</option>
+        </select>
       </div>
 
-      {/* Complaint Cards */}
-      {filteredComplaints.length === 0 && <p>No complaints match your search or filters.</p>}
+      {/* Complaint List */}
+      <div className="flex flex-col gap-5">
+        {filteredComplaints.length === 0 && (
+          <p className="text-[#A6FFCB]">No complaints found.</p>
+        )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         {filteredComplaints.map((c) => (
           <div
             key={c._id}
-            style={{
-              background: COLORS.violetMid,
-              padding: "1rem",
-              borderRadius: "12px",
-              boxShadow: "0 0 10px rgba(0,0,0,0.5)",
-            }}
+            className="bg-[#00160D]/70 border border-[#39FF14]/30 rounded-xl shadow-[0_0_20px_#39FF1430] p-5 backdrop-blur-xl"
           >
-            <h3 style={{ margin: "0 0 0.5rem 0", color: COLORS.gold }}>
-              {c.title} - <span style={{ fontWeight: "normal" }}>{c.status}</span>
+            <h3 className="text-xl font-semibold text-[#7AFF57]">
+              {c.title} <span className="text-[#39FF14]">({c.status})</span>
             </h3>
-            <p>{c.description}</p>
-            <p>
-              <strong>Category:</strong> {c.category} | <strong>Priority:</strong>{" "}
-              {c.priority}
+
+            <p className="mt-1 text-[#D9FFE8]">{c.description}</p>
+
+            <p className="text-sm mt-2 text-[#7AFF57]">
+              <strong>Category:</strong> {c.category} &nbsp;|&nbsp;
+              <strong>Priority:</strong> {c.priority}
             </p>
-            {c.location?.latitude && c.location?.longitude && (
-              <p>
-                <strong>Location:</strong> {c.location.address || "N/A"} (
-                {c.location.latitude.toFixed(4)}, {c.location.longitude.toFixed(4)})
-              </p>
-            )}
+
+            {/* Image */}
             {c.photo_url && (
               <img
                 src={c.photo_url}
                 alt="Complaint"
-                style={{ maxWidth: "100%", borderRadius: "8px", marginTop: "0.5rem" }}
+                className="rounded-lg mt-3 border border-[#39FF14] shadow-lg"
               />
             )}
 
-            <div style={{ marginTop: "0.5rem" }}>
-              <label style={{ marginRight: "0.5rem" }}>Update Status:</label>
+            <div className="mt-4">
+              <label className="mr-2 text-[#A6FFCB]">Update Status:</label>
+
               <select
                 value={c.status}
-                onChange={(e) => handleStatusChange(c._id, e.target.value)}
                 disabled={updating === c._id}
-                style={{
-                  padding: "0.4rem 0.6rem",
-                  borderRadius: "6px",
-                  border: "none",
-                  background: COLORS.gold,
-                  color: COLORS.violetDark,
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                }}
+                onChange={(e) => handleStatusChange(c._id, e.target.value)}
+                className="px-3 py-2 rounded-lg bg-[#39FF14]/30 text-white border border-[#39FF14]/40 shadow hover:bg-[#39FF14]/40 cursor-pointer"
               >
-                {["OPEN", "ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].map(
-                  (status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  )
-                )}
+                {["OPEN", "ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"].map((s) => (
+                  <option key={s} className="bg-black text-white">
+                    {s}
+                  </option>
+                ))}
               </select>
-              {updating === c._id && <span style={{ marginLeft: "0.5rem" }}>Updating...</span>}
+
+              {updating === c._id && (
+                <span className="ml-3 text-[#7AFF57] animate-pulse">Updating...</span>
+              )}
             </div>
           </div>
         ))}
       </div>
     </div>
   );
-};
-
-export default StaffDashboard;
-
-
-
-
+}
