@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import axiosInstance from "../../../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import "./Register.css"; // Import the new unified CSS
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -37,96 +36,155 @@ export default function Register() {
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
-
-        const role = res.data.user?.role;
-
-        if (role === "admin") navigate("/dashboard/admin");
-        else if (role === "staff") navigate("/dashboard/staff");
-        else navigate("/dashboard/citizen");
-      } else {
-        setError("Registration successful, please log in.");
-        navigate("/login");
       }
+
+      navigate("/login");
     } catch (err) {
-      setError(
-        err.response?.data?.msg || "Registration failed. Please try again."
-      );
+      setError(err.response?.data?.msg || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="register-container">
-      {/* Ambient Glows */}
-      <div className="register-blue"></div>
-      <div className="register-yellow"></div>
+    <div className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden">
+
+      {/* Background Image + Dark Overlay */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage:
+            `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)), url("/src/assets/powerranger-bg.jpg")`,
+        }}
+      />
+
+      {/* Grid Overlay */}
+      <div
+        className="absolute inset-0 opacity-[0.18]"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(45deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 38px)",
+        }}
+      ></div>
+
+      {/* Blue Energy Glow */}
+      <div className="absolute w-[350px] h-[350px] bg-blue-500 blur-[150px] opacity-25 top-[-90px] left-[-120px]"></div>
+
+      {/* Yellow Energy Glow */}
+      <div className="absolute w-[380px] h-[380px] bg-yellow-400 blur-[170px] opacity-25 bottom-[-110px] right-[-120px]"></div>
 
       {/* Register Card */}
-      <div className="register-card">
-        <h2 className="register-title">✨ Create Account</h2>
+      <div className="relative z-10 w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl px-10 py-10 shadow-2xl">
 
-        <form onSubmit={handleSubmit}>
+        {/* Title */}
+        <h2
+          className="text-3xl font-bold text-center mb-8"
+          style={{
+            fontFamily: "Orbitron",
+            background: "linear-gradient(to right, #f4d000, white)",
+            WebkitBackgroundClip: "text",
+            color: "transparent",
+          }}
+        >
+          ✨ Create Account
+        </h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+
           {/* Username */}
-          <label className="register-label">Username</label>
-          <input
-            type="text"
-            name="username"
-            className="register-input"
-            placeholder="Enter username"
-            onChange={handleChange}
-            required
-          />
+          <div>
+            <label className="block mb-1 text-white/75 font-semibold text-sm">
+              Username
+            </label>
+            <input
+              type="text"
+              name="username"
+              placeholder="Enter username"
+              onChange={handleChange}
+              required
+              className="w-full p-3 rounded-lg bg-white/20 border border-white/30 
+              text-white placeholder-white/60 focus:border-blue-400 focus:ring-2 
+              focus:ring-blue-500/40 outline-none transition"
+            />
+          </div>
 
           {/* Email */}
-          <label className="register-label">Email</label>
-          <input
-            type="email"
-            name="email"
-            className="register-input"
-            placeholder="Enter email"
-            onChange={handleChange}
-            required
-          />
+          <div>
+            <label className="block mb-1 text-white/75 font-semibold text-sm">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter email"
+              onChange={handleChange}
+              required
+              className="w-full p-3 rounded-lg bg-white/20 border border-white/30 
+              text-white placeholder-white/60 focus:border-blue-400 focus:ring-2 
+              focus:ring-blue-500/40 outline-none transition"
+            />
+          </div>
 
           {/* Password */}
-          <label className="register-label">Password</label>
-          <input
-            type="password"
-            name="password"
-            className="register-input"
-            placeholder="Enter password"
-            onChange={handleChange}
-            required
-            minLength={6}
-          />
+          <div>
+            <label className="block mb-1 text-white/75 font-semibold text-sm">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              placeholder="Enter password"
+              onChange={handleChange}
+              required
+              minLength={6}
+              className="w-full p-3 rounded-lg bg-white/20 border border-white/30 
+              text-white placeholder-white/60 focus:border-blue-400 focus:ring-2 
+              focus:ring-blue-500/40 outline-none transition"
+            />
+          </div>
 
           {/* Role */}
-          <label className="register-label">Select Role</label>
-          <select
-            name="role"
-            className="register-select"
-            value={formData.role}
-            onChange={handleChange}
-          >
-            <option value="citizen">Citizen</option>
-            <option value="staff">Staff</option>
-            <option value="admin">Admin</option>
-          </select>
+          <div>
+            <label className="block mb-1 text-white/75 font-semibold text-sm">
+              Select Role
+            </label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="w-full p-3 rounded-lg bg-white/20 border border-white/30 
+              text-white focus:border-blue-400 focus:ring-2 focus:ring-blue-500/40 
+              outline-none transition"
+            >
+              <option value="citizen" className="text-black">Citizen</option>
+              <option value="staff" className="text-black">Staff</option>
+              <option value="admin" className="text-black">Admin</option>
+            </select>
+          </div>
 
           {/* Error Message */}
-          {error && <p className="login-error">{error}</p>}
+          {error && <p className="text-red-400 text-sm">{error}</p>}
 
           {/* Submit Button */}
-          <button className="register-btn" disabled={isLoading}>
+          <button
+            className="w-full py-3 bg-blue-600 hover:bg-blue-500 transition 
+            rounded-lg text-white font-semibold shadow-lg shadow-blue-500/40 
+            border border-transparent hover:border-blue-400"
+            disabled={isLoading}
+          >
             {isLoading ? "Registering..." : "Register"}
           </button>
         </form>
 
-        {/* Navigation Link */}
-        <p className="register-footer">
+        {/* Footer */}
+        <p className="text-center text-white/70 mt-6 text-sm">
           Already have an account?{" "}
-          <span onClick={() => navigate("/login")}>Login</span>
+          <span
+            className="text-yellow-400 cursor-pointer font-semibold hover:underline"
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </span>
         </p>
       </div>
     </div>
