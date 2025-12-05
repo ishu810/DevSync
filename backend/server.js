@@ -11,6 +11,7 @@ import authRoutes from './src/routes/authRouts.js';
 import complaintRoutes from './src/routes/complaintRoutes.js';
 import dashboardRoutes from "./src/routes/dashboardRoutes.js";
 import userRoutes from './src/routes/userRoutes.js';
+import commentRoutes from "./src/routes/commentRoutes.js"
 // import saveNotificationToken from "./src/firebase/routes.js"
 const app = express();
 
@@ -54,6 +55,8 @@ app.use("/api/dashboard", dashboardRoutes);
 
 app.use('/api/users', userRoutes);
 // app.use("/api/v1/save-token",saveNotificationToken)
+
+app.use("/api/comments", commentRoutes);
 
 
 
