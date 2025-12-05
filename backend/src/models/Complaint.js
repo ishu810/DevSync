@@ -63,7 +63,11 @@ const ComplaintSchema = new Schema(
 
     deadline: {
       type: Date,
-      default: null,
+      default: () => {
+      const now = new Date();
+      now.setDate(now.getDate() + 2); // add 2 days
+      return now;
+    },
     },
     lastDeadlineAlerted: {
       type: Date,

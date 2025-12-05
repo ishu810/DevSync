@@ -23,6 +23,10 @@ const UserSchema = new Schema({
     unique: true,
     trim: true,
     lowercase: true
+  },
+  fcmToken:{
+    type:String,
+    default:null,
   }
 }, {
   timestamps: true, 

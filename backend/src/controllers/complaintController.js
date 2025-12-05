@@ -76,7 +76,7 @@ export const getComplaints = async (req, res) => {
       .populate('submitted_by', 'username email')
       .populate('assigned_to', 'username email')
       .sort({ createdAt: -1 });
-
+    
     return res.status(200).json(complaints);
   } catch (error) {
     console.error('Error fetching complaints:', error.stack);
@@ -112,7 +112,9 @@ export const assignComplaint = async (req, res) => {
       const body = `Complaint #${complaint._id} has been assigned to you. Type: ${complaint.category}. Location: ${complaint.location?.address || 'N/A'}. Deadline: ${complaint.deadline ? new Date(complaint.deadline).toLocaleString() : 'N/A'}`;
 
       if (staffUser.fcmToken) {
+        console.log("in background messaging");
         await sendNotification(staffUser.fcmToken, title, body);
+        console.log("background messaging done");
       }
       if (staffUser.email) {
         const html = `
