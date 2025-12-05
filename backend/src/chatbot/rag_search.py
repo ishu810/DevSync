@@ -54,3 +54,28 @@ def search_qdrant(query: str, user: str = None, top_k: int = 5):
                     "score": hit.score
                 })
     return contexts
+
+def call_gemini(prompt: str) -> str:
+    
+    clean_key = GEMINI_API_KEY.strip()
+    clean_model = GEMINI_MODEL.strip()
+    
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{clean_model}:generateContent?key={clean_key}"
+
+    payload = {
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.3,
+            "maxOutputTokens": 1024
+        }
+    }
+
+    try:
+        resp = requests.post(url, json=payload, timeout=60)
+        resp.raise_for_status()
+        return resp.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+    except requests.exceptions.HTTPError as e:
+        return f"Gemini API Error: {e.response.status_code} - {e.response.text}"
+    except Exception as e:
+        return f"Error: {e}"
