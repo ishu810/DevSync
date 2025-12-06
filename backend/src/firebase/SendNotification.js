@@ -10,7 +10,7 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || "smtp.gmail.com",
   port: process.env.EMAIL_PORT ? Number(process.env.EMAIL_PORT) : 587,
-  secure: process.env.EMAIL_SECURE === "true", // true for port 465
+  secure: process.env.EMAIL_SECURE === "true",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -35,7 +35,6 @@ async function sendEmail(to, subject, text, html) {
   try {
     const info = await transporter.sendMail(mailOptions);
     console.log("email send");
-    // console.log(`Email sent to ${to}: ${info.messageId}`);
   } catch (err) {
     console.error("Error sending email:", err);
   }
@@ -81,7 +80,7 @@ const sendnoti = () => {
             if (complaint.lastDeadlineAlerted) {
               const lastAlert = new Date(complaint.lastDeadlineAlerted);
               if (now.getTime() - lastAlert.getTime() < 60 * 60 * 1000) { 
-                // If alerted within the last hour
+                // alerted within the last hour
                 console.log(`Already alerted for complaint ${complaint._id} within the last hour.`);
                 continue;
               }

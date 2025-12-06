@@ -1,7 +1,7 @@
 import Complaint from '../models/Complaint.js';
 import { sendNotification, sendEmail } from '../firebase/SendNotification.js';
 import User  from '../models/User.js';
-export const submitComplaint = async (req, res) => {
+export const submitComplaint = async (req, res) => {2
   try {
     if (!req.user || !req.user.id) {
       return res.status(401).json({ success: false, message: 'User not authenticated' });
@@ -10,7 +10,6 @@ export const submitComplaint = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Only citizens can submit complaints' });
     }
 
-    // Extract fields safely
     const {
       title = '',
       description = '',
@@ -84,9 +83,7 @@ export const getComplaints = async (req, res) => {
   }
 };
 
-/**
- * Assign Complaint — admin assigns complaint to staff
- */
+
 export const assignComplaint = async (req, res) => {
   try {
     if (req.user.role !== 'admin') {

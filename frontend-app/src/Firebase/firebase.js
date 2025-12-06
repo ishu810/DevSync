@@ -27,7 +27,7 @@ const firebaseConfig = {
   // messagingSenderId: "785418315133",
   // appId: "1:785418315133:web:5238eb79d972d84cea9814",
   // measurementId: "G-BR5CS7G9WM"
-
+//********************************* */
   apiKey: "AIzaSyDgYq_SgOUXy_Na6-5JwXPuYv0EJKzIQeQ",
   authDomain: "devsync-7042c.firebaseapp.com",
   projectId: "devsync-7042c",
@@ -35,6 +35,14 @@ const firebaseConfig = {
   messagingSenderId: "350245660506",
   appId: "1:350245660506:web:b9d271fcd53d3b3f64b563",
   measurementId: "G-J7T1TBWGP9"
+
+  // apiKey: import.meta.env.APIKEY,
+  // authDomain:import.meta.env. AUTHDOMAIN,
+  // projectId: import.meta.env.PROJECT_ID,
+  // storageBucket: import.meta.env.STORAGE_BUCKET,
+  // messagingSenderId: import.meta.env.MESSAGING_SENDER_ID,
+  // appId: import.meta.env.APP_ID,
+  // measurementId: import.meta.env.MEASUREMENT_ID
 
 };
 
