@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axiosInstance from "../../../api/axiosInstance";
+import axiosInstance from "../../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
@@ -49,7 +49,7 @@ export default function Register() {
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden">
 
-      {/* Background Image + Dark Overlay */}
+      
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
@@ -58,7 +58,7 @@ export default function Register() {
         }}
       />
 
-      {/* Grid Overlay */}
+      
       <div
         className="absolute inset-0 opacity-[0.18]"
         style={{
@@ -67,16 +67,16 @@ export default function Register() {
         }}
       ></div>
 
-      {/* Blue Energy Glow */}
+
       <div className="absolute w-[350px] h-[350px] bg-blue-500 blur-[150px] opacity-25 top-[-90px] left-[-120px]"></div>
 
-      {/* Yellow Energy Glow */}
+  
       <div className="absolute w-[380px] h-[380px] bg-yellow-400 blur-[170px] opacity-25 bottom-[-110px] right-[-120px]"></div>
 
-      {/* Register Card */}
+     
       <div className="relative z-10 w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl px-10 py-10 shadow-2xl">
 
-        {/* Title */}
+     
         <h2
           className="text-3xl font-bold text-center mb-8"
           style={{
@@ -91,7 +91,7 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Username */}
+        
           <div>
             <label className="block mb-1 text-white/75 font-semibold text-sm">
               Username
@@ -108,7 +108,7 @@ export default function Register() {
             />
           </div>
 
-          {/* Email */}
+        
           <div>
             <label className="block mb-1 text-white/75 font-semibold text-sm">
               Email
@@ -125,7 +125,7 @@ export default function Register() {
             />
           </div>
 
-          {/* Password */}
+
           <div>
             <label className="block mb-1 text-white/75 font-semibold text-sm">
               Password
@@ -143,7 +143,6 @@ export default function Register() {
             />
           </div>
 
-          {/* Role */}
           <div>
             <label className="block mb-1 text-white/75 font-semibold text-sm">
               Select Role
@@ -162,10 +161,9 @@ export default function Register() {
             </select>
           </div>
 
-          {/* Error Message */}
+      
           {error && <p className="text-red-400 text-sm">{error}</p>}
 
-          {/* Submit Button */}
           <button
             className="w-full py-3 bg-blue-600 hover:bg-blue-500 transition 
             rounded-lg text-white font-semibold shadow-lg shadow-blue-500/40 
@@ -176,7 +174,7 @@ export default function Register() {
           </button>
         </form>
 
-        {/* Footer */}
+
         <p className="text-center text-white/70 mt-6 text-sm">
           Already have an account?{" "}
           <span

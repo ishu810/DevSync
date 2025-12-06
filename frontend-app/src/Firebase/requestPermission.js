@@ -55,7 +55,6 @@ export const requestPermission = async (userId) => {
       return;
     }
 
-    //REGISTER SERVICE WORKER
     const registration = await navigator.serviceWorker.register(
       "/firebase-messaging-sw.js"
     );
@@ -63,12 +62,13 @@ export const requestPermission = async (userId) => {
     console.log(registration)
     
     const fcmToken = await getToken(messaging, {
-      vapidKey:"BJ-_r57gZZxXsA8-jgDuzZ4uW8dfTWJDlJt5j9v_0m2WkB5SNDpm-X8v5pKeFeGs0XgBQkVfczZNOOKd4eDb7Q0",
-      // vapidKey: "BG8L7pkVGe7RpMdpDSuJd4IR-_QDh0D6Xllb9UIRgcpoeUBXhqhyRL-V2mkWLzDKMcUT24eha-BujuJm7IA4Ia0",
+      vapidKey: import.meta.env.VITE_VAPID_KEY,
+      // vapidKey:"BJ-_r57gZZxXsA8-jgDuzZ4uW8dfTWJDlJt5j9v_0m2WkB5SNDpm-X8v5pKeFeGs0XgBQkVfczZNOOKd4eDb7Q0",
       serviceWorkerRegistration: registration,
     });
     console.log(fcmToken)
     console.log("got fcm token")
+    console.log("vapikey",import.meta.env.VITE_VAPID_KEY)
 
     if (!fcmToken) {
       console.error("Failed to get FCM token from Firebase");

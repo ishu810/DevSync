@@ -5,7 +5,7 @@ export default function ComplaintLifecycle() {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [timeLefts, setTimeLefts] = useState({}); // key: complaint ID, value: remaining time
+  const [timeLefts, setTimeLefts] = useState({}); // key: complaint ID → remaining time
 
   const fetchComplaints = async () => {
     setLoading(true);
@@ -26,12 +26,12 @@ export default function ComplaintLifecycle() {
       const data = Array.isArray(res.data) ? res.data : [];
       setComplaints(data);
 
-      // Initialize countdowns
-      const initialTimes = {};
+      // Initialize countdown timers
+      const initial = {};
       data.forEach((c) => {
-        initialTimes[c._id] = calculateTimeLeft(c.deadline);
+        initial[c._id] = calculateTimeLeft(c.deadline);
       });
-      setTimeLefts(initialTimes);
+      setTimeLefts(initial);
 
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch complaints");
@@ -45,17 +45,17 @@ export default function ComplaintLifecycle() {
     fetchComplaints();
   }, []);
 
-  // Update countdowns every second
+  // Live countdown update
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      const newTimes = {};
+    const interval = setInterval(() => {
+      const updated = {};
       complaints.forEach((c) => {
-        newTimes[c._id] = calculateTimeLeft(c.deadline);
+        updated[c._id] = calculateTimeLeft(c.deadline);
       });
-      setTimeLefts(newTimes);
+      setTimeLefts(updated);
     }, 1000);
 
-    return () => clearInterval(intervalId);
+    return () => clearInterval(interval);
   }, [complaints]);
 
   if (loading)
@@ -80,25 +80,15 @@ export default function ComplaintLifecycle() {
         <p className="text-[#B4FF5A]">No complaints submitted yet.</p>
       ) : (
         complaints.map((c) => {
-          const timeLeft = timeLefts[c._id];
+          const timeLeft = timeLefts[c._id];   // ✅ FIXED
+
           return (
             <div
               key={c._id}
-              className="
-                bg-white/10 
-                backdrop-blur-xl 
-                rounded-2xl
-                border border-[#3CFF8F]/40
-                shadow-[0_8px_32px_rgba(0,0,0,0.37)]
-                p-6 
-                text-white
-                transition 
-                hover:scale-[1.02]
-                hover:shadow-[0_0_20px_#3CFF8F]
-              "
+              className="bg-white/10 backdrop-blur-xl rounded-2xl border border-[#3CFF8F]/40 shadow-[0_8px_32px_rgba(0,0,0,0.37)] p-6 text-white transition hover:scale-[1.02] hover:shadow-[0_0_20px_#3CFF8F]"
             >
               {/* TITLE */}
-              <h3 className="text-[#7CFFD8] text-xl font-bold mb-2 drop-shadow-[0_0_5px_#3CFF8F]">
+              <h3 className="text-[#ffffff] text-xl font-bold mb-2 drop-shadow-[0_0_1px_#3CFF8F]">
                 {c.title}
               </h3>
 
@@ -112,7 +102,10 @@ export default function ComplaintLifecycle() {
 
               {/* SLA TIMER */}
               {timeLeft && (
-                <p className="text-red-400 font-semibold mb-2">
+                <p 
+                   className={`mt-2 font-semibold ${
+                    timeLeft.total <=0 ?"text-red-500" : "text-yellow-400"
+                   }`}>
                   Deadline:{" "}
                   {timeLeft.total > 0
                     ? `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s`
@@ -142,11 +135,7 @@ export default function ComplaintLifecycle() {
                 <img
                   src={c.photo_url}
                   alt="Complaint"
-                  className="
-                    w-full mt-3 rounded-xl 
-                    border border-[#7CFFD8]/30 
-                    shadow-[0_0_12px_#7CFFD8]/30
-                  "
+                  className="w-full mt-3 rounded-xl border border-[#7CFFD8]/30 shadow-[0_0_12px_#7CFFD8]/30"
                 />
               )}
             </div>
@@ -157,19 +146,19 @@ export default function ComplaintLifecycle() {
   );
 }
 
-// Helper function
+// Helper
 function calculateTimeLeft(deadline) {
   if (!deadline) return { total: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-  const now = new Date().getTime();
-  const due = new Date(deadline).getTime();
-  const diff = due - now;
-  const total = diff;
+  const now = Date.now();
+  const target = new Date(deadline).getTime();
+  const diff = target - now;
 
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((diff / (1000 * 60)) % 60);
-  const seconds = Math.floor((diff / 1000) % 60);
-
-  return { total, days, hours, minutes, seconds };
+  return {
+    total: diff,
+    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((diff / (1000 * 60)) % 60),
+    seconds: Math.floor((diff / 1000) % 60),
+  };
 }

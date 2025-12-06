@@ -9,13 +9,13 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import Register from "./components/pages/auth/Register.jsx";
-import Login from "./components/pages/auth/Login.jsx";
-import HomePage from "./components/pages/HomePage.jsx";
-import ComplaintForm from "./components/pages/Citizen/ComplaintForm.jsx";
-import AdminDashboard from "./components/pages/Admin/AdminDashboard.jsx";
-import StaffDashboard from "./components/pages/Staff/StaffDashboard.jsx";
-import CitizenDashboard from "./components/pages/Citizen/CitizenDashboard.jsx";
+import Register from "./page/auth/Register.jsx";
+import Login from "./page/auth/Login.jsx";
+import HomePage from "./page/HomePage.jsx";
+import ComplaintForm from "./page/Citizen/ComplaintForm.jsx";
+import AdminDashboard from "./page/Admin/AdminDashboard.jsx";
+import StaffDashboard from "./page/Staff/StaffDashboard.jsx";
+import CitizenDashboard from "./page/Citizen/CitizenDashboard.jsx";
 import ProtectedRoute from "./routes/protectedRoute.jsx";
 
 //Notification

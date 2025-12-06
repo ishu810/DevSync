@@ -1,20 +1,19 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "../components/pages/auth/Login";
-import Register from "../components/pages/auth/Register";
-import CitizenDashboard from "../components/pages/Citizen/CitizenDashboard";
-import StaffDashboard from "../components/pages/Staff/StaffDashboard";
-import AdminDashboard from "../components/pages/Admin/AdminDashboard";
+import Login from "../page/auth/Login";
+import Register from "../page/auth/Register";
+import CitizenDashboard from "../page/Citizen/CitizenDashboard";
+import StaffDashboard from "../page/Staff/StaffDashboard";
+import AdminDashboard from "../page/Admin/AdminDashboard";
 import ProtectedRoute from "../components/protectedRoute";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Public Routes */}
+     
       <Route path="/" element={<Navigate to="/login" />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Citizen Dashboard */}
       <Routes>
   <Route path="/dashboard/citizen" element={
     <ProtectedRoute allowedRoles={["citizen"]}>
@@ -35,7 +34,7 @@ export default function AppRoutes() {
   } />
 </Routes>
 
-      {/* Fallback for unknown routes */}
+     
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );

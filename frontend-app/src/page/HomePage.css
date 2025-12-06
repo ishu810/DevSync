@@ -32,7 +32,7 @@ html, body, #root {
         rgba(0, 0, 0, 0.65), 
         rgba(0, 0, 0, 0.85)
       ),
-      url("../../assets/powerranger-bg.jpg");
+      url("../assets/powerranger-bg.jpg");
   
   background-size: cover;
   background-position: center;
@@ -59,16 +59,10 @@ html, body, #root {
 }
 
 /* LIGHT ENERGY GLOWS */
-.decor-blue {
-  position: absolute;
-  width: 350px;
-  height: 350px;
-  background: var(--accent-blue);
-  border-radius: 50%;
-  filter: blur(130px);
-  opacity: 0.23;
-  top: -80px;
-  left: -120px;
+
+.overlay {
+ 
+  z-index: 1;
 }
 
 .decor-yellow {
@@ -80,10 +74,11 @@ html, body, #root {
   filter: blur(150px);
   opacity: 0.20;
   bottom: -100px;
+  z-index: 2;
   right: -140px;
 }
 
-/* === CONTENT === */
+
 .content {
   position: relative;
   z-index: 10;
@@ -128,7 +123,7 @@ html, body, #root {
   border: 1px solid transparent;
 }
 
-/* LOGIN = Blue theme */
+/* LOGIN */
 .login-btn {
   background: var(--accent-blue);
   color: white;
@@ -141,7 +136,7 @@ html, body, #root {
   color: var(--accent-blue);
 }
 
-/* REGISTER = Pink theme */
+/* REGISTER */
 .register-btn {
   background: var(--accent-pink);
   color: white;

@@ -1,7 +1,11 @@
 import express from "express";
 import { protect, authorizeRoles } from "../middlewares/auth.js";
+import { getAdminStats } from "../controllers/userController.js";
+import { getStaffStats } from "../controllers/userController.js";
 
 const router = express.Router();
+console.log("🚀 Dashboard routes loaded");
+
 
 // Citizen dashboard
 import User from "../models/User.js";
@@ -26,8 +30,9 @@ router.get("/staff", protect, authorizeRoles("staff", "admin"), (req, res) => {
     msg: `Welcome staff ${req.user.username}`,
   });
 });
-
+console.log('dashboard routesss')
 // Admin dashboard
+
 router.get("/admin", protect, authorizeRoles("admin"), (req, res) => {
   res.json({
     success: true,
@@ -36,4 +41,7 @@ router.get("/admin", protect, authorizeRoles("admin"), (req, res) => {
   });
 });
 
+
+
+console.log('reached')
 export default router;

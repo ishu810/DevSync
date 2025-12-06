@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from "react";
-import axiosInstance from "../../../api/axiosInstance";
+import axiosInstance from "../../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
-
+import StatCard from "../../components/StatCard";
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
@@ -10,6 +10,7 @@ const AdminDashboard = () => {
   const [staffList, setStaffList] = useState([]);
   const [assignData, setAssignData] = useState({ complaintId: "", staffId: "" });
   const [timeLefts, setTimeLefts] = useState({}); 
+  const [stats, setStats] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,7 +39,11 @@ const AdminDashboard = () => {
 
         const staffRes = await axiosInstance.get("/api/users/staff");
         setStaffList(staffRes.data || []);
-
+         console.log("reached")
+     
+           const adminStats = await axiosInstance.get("/api/users/admin/stats");
+setStats(adminStats.data||[]);
+console.log('yes')
         setLoading(false);
       } catch (err) {
         alert("Authorization failed");
@@ -90,8 +95,8 @@ const AdminDashboard = () => {
   return (
     <div className="flex min-h-screen bg-[#0B0D10] text-white relative font-inter overflow-hidden">
 
-      {/* GRID BACKGROUND */}
-      <div className="absolute inset-0 opacity-[0.12] pointer-events-none bg-[url('https://i.ibb.co/bvBWG0B/grid.png')]"></div>
+    
+      <div className="absolute inset-0 opacity-[0.12] pointer-events-none bg-[url('./assets/grid.webp')] bg-cover"></div>
 
       {/* NEON GLOWS */}
       <div className="absolute w-[380px] h-[380px] bg-blue-500 blur-[150px] opacity-30 top-[-100px] left-[-100px]"></div>
@@ -119,8 +124,19 @@ const AdminDashboard = () => {
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 p-10 z-10">
-
+      <main className="flex-1 p-10 z-10 mt-12 justify-center ">
+        {stats && (
+  <div className="flex justify-center mb-10">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl w-full">
+      <StatCard label="Total Complaints" value={stats.total} color="#FFD93C" />
+      <StatCard label="Open" value={stats.open} color="#FF4444" />
+      <StatCard label="In Progress" value={stats.inProgress} color="#00CFFF" />
+      <StatCard label="Resolved" value={stats.resolved} color="#4CAF50" />
+      <StatCard label="Closed" value={stats.closed} color="#9CA3AF" />
+      <StatCard label="SLA Violations" value={stats.slaViolations} color="#FF0000" />
+    </div>
+  </div>
+)}
         {/* ASSIGN COMPLAINT CARD */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 mt-10 shadow-2xl rounded-2xl p-6 mb-10">
           <h2 className="font-orbitron text-xl mb-4 text-yellow-400">Assign Complaints</h2>
@@ -165,6 +181,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+      {/* complaint table */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-6">
           <h2 className="font-orbitron text-xl mb-4 text-yellow-400">
             All Complaints

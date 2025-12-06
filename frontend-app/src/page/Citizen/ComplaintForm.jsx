@@ -37,7 +37,7 @@ const ComplaintForm = () => {
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     setFormData({ ...formData, photo: file });
-    setPreview(URL.createObjectURL(file));
+    setPreview(URL.createObjectURL(file));// creates a url for the image uploaded
   };
 
   const refreshLocation = () => {

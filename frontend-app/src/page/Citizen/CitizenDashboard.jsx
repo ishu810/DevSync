@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
-import axiosInstance from "../../../api/axiosInstance";
+
+import axiosInstance from "../../api/axiosInstance";
 import ComplaintForm from "./ComplaintForm";
 import ComplaintLifecycle from "./ComplaintLifecycle";
+import StatCard from "../../components/StatCard";
 import { useNavigate } from "react-router-dom";
-
 export default function CitizenDashboard() {
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
+  const [stats, setStats] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,6 +20,8 @@ export default function CitizenDashboard() {
       try {
         const res = await axiosInstance.get("/api/dashboard/citizen");
         setUsername(res.data.msg.replace("Welcome citizen ", ""));
+            const statsRes = await axiosInstance.get("/api/users/dashboard/stats");
+    setStats(statsRes.data);
         setLoading(false);
       } catch {
         navigate("/login");
@@ -117,6 +121,19 @@ export default function CitizenDashboard() {
               ">
               Welcome, {username}! ⚡
             </h2>
+             {stats && (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
+        <StatCard label="Total Complaints" value={stats.total} color="#3CFF8F" />
+        <StatCard label="Open" value={stats.open} color="#FFD93C" />
+        <StatCard label="In Progress" value={stats.inprogress} color="#7CFFD8" />
+        <StatCard label="Resolved" value={stats.resolved} color="#4CAF50" />
+        <StatCard
+  label="Last Complaint Status"
+  value={stats.lastComplaintStatus || "No Complaints Yet"}
+  color="#FFAA33"
+/>
+      </div>
+    )}
 
             <ComplaintLifecycle />
           </div>
