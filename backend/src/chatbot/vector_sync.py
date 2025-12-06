@@ -25,9 +25,9 @@ def get_searchable_text(doc: dict) -> str:
 
 def upsert_vector(doc: dict):
     mongo_id = doc["_id"]
-    point_id = str(uuid.uuid4())          # ← generate proper UUID
+    point_id = str(uuid.uuid4())          
 
-    text = get_searchable_text(doc)       # ← Uses your new text function
+    text = get_searchable_text(doc)       
     if not text:
         return
 
@@ -39,12 +39,8 @@ def upsert_vector(doc: dict):
         payload={
             "doc_id": str(mongo_id),
             
-            # --- UPDATED FIELDS BASED ON YOUR SCREENSHOT ---
-            
-            # 1. Use 'title' as the main display name (was 'filename')
             "filename": doc.get("title", "Untitled Complaint"),
             
-            # 2. Map 'submitted_by' to 'user' to keep your existing user-filtering logic working
             "user": str(doc.get("submitted_by", "unknown")),
             
             # 3. Store extra metadata (useful if you want to filter by these later)
