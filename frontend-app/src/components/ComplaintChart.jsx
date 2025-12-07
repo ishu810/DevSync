@@ -11,7 +11,6 @@ import {
   ReferenceLine,
   Dot
 } from 'recharts';
-import html2canvas from 'html2canvas';
 
 const ComplaintsChart = ({ complaints = [], onExport }) => {
   const chartRef = useRef(null);
@@ -139,22 +138,74 @@ const ComplaintsChart = ({ complaints = [], onExport }) => {
 
   // Export functionality
   const handleExport = async (format) => {
-    if (!chartRef.current) return;
+    if (!chartRef.current) {
+      alert('Chart not available for export');
+      return;
+    }
 
     try {
+      // Import html2canvas dynamically
+      const html2canvas = (await import('html2canvas')).default;
+      
       const canvas = await html2canvas(chartRef.current, {
         backgroundColor: '#050607',
-        scale: 2
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false
       });
 
       if (format === 'png') {
-        const link = document.createElement('a');
-        link.download = `complaints-chart-${new Date().toISOString().split('T')[0]}.png`;
-        link.href = canvas.toDataURL();
-        link.click();
+        try {
+          // Method 1: Direct download
+          const dataUrl = canvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.href = dataUrl;
+          link.download = `complaints-chart-${new Date().toISOString().split('T')[0]}.png`;
+          link.style.display = 'none';
+          
+          document.body.appendChild(link);
+          link.click();
+          
+          setTimeout(() => {
+            if (document.body.contains(link)) {
+              document.body.removeChild(link);
+            }
+          }, 100);
+          
+        } catch (error) {
+          console.error('PNG export method 1 failed:', error);
+          
+          // Method 2: Blob approach
+          try {
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `complaints-chart-${new Date().toISOString().split('T')[0]}.png`;
+                link.style.display = 'none';
+                
+                document.body.appendChild(link);
+                link.click();
+                
+                setTimeout(() => {
+                  if (document.body.contains(link)) {
+                    document.body.removeChild(link);
+                  }
+                  URL.revokeObjectURL(url);
+                }, 100);
+              }
+            }, 'image/png');
+          } catch (blobError) {
+            console.error('PNG export method 2 failed:', blobError);
+            alert('PNG export failed. Please try again.');
+          }
+        }
       }
     } catch (error) {
       console.error('Export failed:', error);
+      alert('Failed to export chart. Please try again.');
     }
   };
 

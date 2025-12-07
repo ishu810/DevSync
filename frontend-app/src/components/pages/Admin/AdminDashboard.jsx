@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import StatCard from "../../StatCard";
 import CreateUserForm from "../../CreateUserForm";
 import ComplaintsChart from "../../ComplaintChart";
+import { exportComplaintsData, exportUsersData, exportDashboardStats } from "../../../utils/ExportUtils";
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
@@ -136,7 +137,7 @@ console.log('yes')
         {activeView==="dashboard" && (
           <>
         {stats && (
-  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10 max-w-5xl justify-center">
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6 max-w-5xl justify-center">
     <StatCard label="Total Complaints" value={stats.total} color="#FFD93C" />
     <StatCard label="Open" value={stats.open} color="#FF4444" />
     <StatCard label="In Progress" value={stats.inProgress} color="#00CFFF" />
@@ -145,6 +146,29 @@ console.log('yes')
     <StatCard label="SLA Violations" value={stats.slaViolations} color="#FF0000" />
   </div>
 )}
+
+        {/* Export Dashboard Stats */}
+        <div className="flex justify-center gap-3 mb-8">
+          <span className="text-white/70 text-sm self-center">Export Statistics:</span>
+          <button
+            onClick={() => exportDashboardStats(stats, 'csv')}
+            className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition"
+          >
+            CSV
+          </button>
+          <button
+            onClick={() => exportDashboardStats(stats, 'json')}
+            className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition"
+          >
+            JSON
+          </button>
+          <button
+            onClick={() => exportDashboardStats(stats, 'pdf')}
+            className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition"
+          >
+            PDF
+          </button>
+        </div>
         
         {/* Complaints Chart */}
         <div className="mb-10">
@@ -199,9 +223,31 @@ console.log('yes')
         </div>
       {/* complaint table */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-6">
-          <h2 className="font-orbitron text-xl mb-4 text-yellow-400">
-            All Complaints
-          </h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="font-orbitron text-xl text-yellow-400">
+              All Complaints
+            </h2>
+            <div className="flex gap-2">
+              <button
+                onClick={() => exportComplaintsData(complaints, 'csv')}
+                className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition"
+              >
+                Export CSV
+              </button>
+              <button
+                onClick={() => exportComplaintsData(complaints, 'json')}
+                className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition"
+              >
+                Export JSON
+              </button>
+              <button
+                onClick={() => exportComplaintsData(complaints, 'pdf')}
+                className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition"
+              >
+                Export PDF
+              </button>
+            </div>
+          </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-center border-collapse">
