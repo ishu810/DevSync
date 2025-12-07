@@ -1,4 +1,5 @@
 import { Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
 
 const UserSchema = new Schema({
   username: {
@@ -27,7 +28,21 @@ const UserSchema = new Schema({
   fcmToken:{
     type:String,
     default:null,
-  }
+  },
+ratings: [
+    {
+      rater: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      rating: { type: Number, min: 1, max: 5, required: true },
+      date: { type: Date, default: Date.now }
+    }
+  ],
+
+  // rating:{
+  //   type:Number,
+  //   default:5,
+  //   min: 1,
+  //   max: 5
+  // }
 }, {
   timestamps: true, 
 });

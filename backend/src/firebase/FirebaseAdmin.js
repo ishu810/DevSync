@@ -35,7 +35,7 @@ console.log(admin.credential);
 const saveNotificationToken = async (req, res, next) => {
   try {
     console.log("in save notification controller function")
-    const { fcmToken, userId } = req.body; // Assuming these are sent in the request body
+    const { fcmToken, userId } = req.body;
     if (!fcmToken || !userId) {
       return res.status(400).json({ message: "FCM token and User ID are required." });
     }

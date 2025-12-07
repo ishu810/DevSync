@@ -2,6 +2,9 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import connectDB from './src/Configs/db.js';
+import { protect, authorizeRoles } from './src/middlewares/auth.js';
+import User from './src/models/User.js';
+
 
 connectDB();
 
@@ -39,7 +42,36 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use('/api/users', userRoutes);
 app.post("/api/v1/save-token",saveNotificationToken)
 
+app.post('/api/users/:id/rate', protect, async (req, res) => {
+  const staffId = req.params.id;
+  const raterId = req.user._id;  // assuming auth middleware sets req.user
+  const { rating } = req.body;
+  console.log(rating);
+  console.log("staffid",staffId)
+  console.log("userid",raterId)
+  if (typeof rating !== 'number' || rating < 1 || rating > 5) {
+    return res.status(400).json({ message: 'Invalid rating value' });
+  }
 
+  try {
+    const staff = await User.findById(staffId);
+    console.log("finding staff in rating route")
+    if (!staff) {
+      return res.status(404).json({ message: 'Staff user not found' });
+    }
+   console.log("staff found");
+    staff.ratings.push({ rater: raterId, rating, date: new Date() });
+    console.log("rating pushed");
+    await staff.save();
+    console.log("rating saved");
+    return res.status(200).json({ message: 'Rating saved', ratings: staff.ratings });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// export default router;
 
 
 // app.use('/api/hi',(req,res)=>{

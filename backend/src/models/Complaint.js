@@ -89,7 +89,7 @@ const ComplaintSchema = new Schema(
       type: Date,
       default: () => {
       const now = new Date();
-      now.setDate(now.getDate() + 2); // add 2 days
+      now.setDate(now.getDate() + 2); 
       return now;
     },
     },

@@ -1,6 +1,5 @@
 import User from '../models/User.js';
 import Complaint from '../models/Complaint.js';
-console.log(">>>>> USER CONTROLLER LOADED <<<<<");
 
 export const getAllStaff = async (req, res) => {
   try {
@@ -34,33 +33,27 @@ export const getStats=async (req,res)=>{
 export const getAdminStats = async (req, res) => {
  try {
 
-    // 1️⃣ Total complaints for the tenant
     const total = await Complaint.countDocuments({});
 
-    // 2️⃣ Status counts
     const open = await Complaint.countDocuments({ status: "OPEN" });
     const inProgress = await Complaint.countDocuments({ status: "IN_PROGRESS" });
     const closed = await Complaint.countDocuments({ status: "CLOSED" });
     const resolved = await Complaint.countDocuments({ status: "RESOLVED" });
 
-    // 3️⃣ SLA Violations (example : older than 3 days and not resolved)
     const slaViolations = await Complaint.countDocuments({
       status: { $nin: ["RESOLVED", "CLOSED"] },
       updatedAt: { $lt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) }
     });
 
-    // 4️⃣ Complaints grouped by category (department)
     const byCategory = await Complaint.aggregate([
       { $group: { _id: "$category", count: { $sum: 1 } } }
     ]);
 
-    // 5️⃣ Complaints per engineer
     const byEngineer = await Complaint.aggregate([
       { $match: { assigned_to: { $ne: null } } },
       { $group: { _id: "$assigned_to", count: { $sum: 1 } } }
     ]);
 
-    // 6️⃣ Trend (last 7 days)
     const dailyTrend = await Complaint.aggregate([
       {
         $group: {
@@ -118,7 +111,6 @@ export const getStaffStats = async (req, res) => {
       status: "CLOSED"
     });
 
-    // SLA breach example: tasks not resolved within 48 hours
     const slaViolations = await Complaint.countDocuments({
       assigned_to: staffId,
       status: { $nin: ["RESOLVED", "CLOSED"] },
@@ -145,6 +137,21 @@ export const getStaffStats = async (req, res) => {
     res.status(500).json({ msg: "Error fetching staff stats" });
   }
 };
+
+export const getUserById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).select("fcmToken"); // Only select fcmToken
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("Error fetching user by ID:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
 // export const hi = async (req, res) => {
 //   console.log("hi");
 //   res.send("hi");

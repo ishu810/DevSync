@@ -96,7 +96,7 @@ console.log('yes')
     <div className="flex min-h-screen bg-[#0B0D10] text-white relative font-inter overflow-hidden">
 
     
-      <div className="absolute inset-0 opacity-[0.12] pointer-events-none bg-[url('./assets/grid.webp')] bg-cover"></div>
+      <div className="absolute inset-0 opacity-[0.4] pointer-events-none bg-[url('./assets/devsync.jpg')] bg-top blur-l"></div>
 
       {/* NEON GLOWS */}
       <div className="absolute w-[380px] h-[380px] bg-blue-500 blur-[150px] opacity-30 top-[-100px] left-[-100px]"></div>

@@ -11,17 +11,24 @@ export default function StaffDashboard() {
   const [sortBy, setSortBy] = useState("latest");
   const [stats, setStats] = useState(null);
   const [timeLefts, setTimeLefts] = useState({});
-
+  const [userna, setUserna] = useState("");
+  const [ratearr, setRatearr] = useState()
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
         const res = await axiosInstance.get("/api/complaints");
+        console.log("engineer name", res.data[0].assigned_to.username)
+        var namee = res.data[0].assigned_to.username;
+        console.log("const", namee)
+        // console.log("ratings", res.)
+        // console.log(res.data)
+        setUserna(res.data[0].assigned_to.username);
+        setRatearr(res.data[0].assigned_to.ratings)
+        console.log("uset name", userna)
         setComplaints(res.data);
 
         const statsRes = await axiosInstance.get("/api/users/stats");
         setStats(statsRes.data);
-
-        // Initialize SLA timers
         const initialTimes = {};
         res.data.forEach((c) => {
           initialTimes[c._id] = calculateTimeLeft(c.deadline);
@@ -36,9 +43,13 @@ export default function StaffDashboard() {
     };
 
     fetchComplaints();
-  }, []);
 
-  // Update SLA countdown every second
+  }, []);
+  //   useEffect(() => {
+  //   console.log("Username is now:", userna);
+  //   console.log("rate is now",ratearr);
+  // }, [userna]);
+
   useEffect(() => {
     const intervalId = setInterval(() => {
       const newTimes = {};
@@ -50,16 +61,13 @@ export default function StaffDashboard() {
 
     return () => clearInterval(intervalId);
   }, [complaints]);
-
   const handleStatusChange = async (complaintId, newStatus) => {
     try {
       setUpdating(complaintId);
-
       await axiosInstance.patch("/api/complaints/status", {
         complaintId,
         status: newStatus,
       });
-
       setComplaints((prev) =>
         prev.map((c) =>
           c._id === complaintId ? { ...c, status: newStatus } : c
@@ -82,16 +90,28 @@ export default function StaffDashboard() {
         c.title.toLowerCase().includes(search.toLowerCase())
     )
     .sort((a, b) => {
-      if (sortBy === "latest")
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      if (sortBy === "oldest")
-        return new Date(a.createdAt) - new Date(b.createdAt);
+      if (sortBy === "latest") return new Date(b.createdAt) - new Date(a.createdAt);
+      if (sortBy === "oldest") return new Date(a.createdAt) - new Date(b.createdAt);
       if (sortBy === "priority") {
         const order = { High: 3, Medium: 2, Low: 1 };
         return order[b.priority] - order[a.priority];
       }
       return 0;
     });
+    const [rating, setRating] = useState(0);
+//***********rating calculation */
+useEffect(() => {
+  if (!Array.isArray(ratearr) || ratearr.length === 0) {
+    setRating(0);
+    return;
+  }
+  console.log("in calculation",ratearr);
+  console.log(ratearr[0].rating);
+  const sum = ratearr.reduce((acc, r) => acc + (r.rating || 0), 0);
+  console.log(sum)
+  const base = ratearr.length;
+  setRating(sum / base);
+}, [ratearr]);
 
   if (loading)
     return (
@@ -101,11 +121,52 @@ export default function StaffDashboard() {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#00160D] via-[#003A20] to-[#000d05] text-white p-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#00160D] via-[#003A20] to-[#000d05] text-white p-6 mt-17">
 
-      <h2 className="text-3xl font-orbitron font-bold text-[#7AFF57] mb-6 mt-16">
-        ENGINEER Dashboard
-      </h2>
+      <div className="w-full h-20 bg-[#0D0D0D] flex items-center justify-center px-6 border-b border-[#7AFF57]">
+        <h1 className="text-3xl font-orbitron font-bold text-[#7AFF57]">
+          Engineer Dashboard
+        </h1>
+      </div>
+
+
+
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-orbitron font-bold text-[#7AFF57]">
+          Welcome {userna || "Engineer"}
+        </h2>
+        <div className="flex items-center text-2xl">
+  {[1, 2, 3, 4, 5].map((i) => (
+    <span
+      key={i}
+      className={
+        "mx-0.5 transition-transform duration-150 " +
+        (i <= Math.round(rating)
+          ? "text-yellow-400 drop-shadow-md scale-110"
+          : "text-gray-500")
+      }
+    >
+      ★
+    </span>
+  ))}
+
+  <span className="ml-3 text-[#7AFF57] text-xl font-semibold tracking-wide">
+    {rating.toFixed(1)} / 5
+  </span>
+</div>
+
+        {/* <div className="flex items-center text-2xl">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <span
+              key={i}
+              className={i <= Math.round(rating) ? "text-yellow-400" : "text-white"}
+            >
+              ★
+            </span>
+          ))}
+          <span className="ml-2 text-[#A6FFCB] text-lg">{rating.toFixed(1)}/5</span>
+        </div> */}
+      </div>
 
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
@@ -118,7 +179,6 @@ export default function StaffDashboard() {
         </div>
       )}
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6 bg-[#003A20]/20 p-4 rounded-xl border border-[#39FF14]/30">
         <input
           type="text"
@@ -163,7 +223,6 @@ export default function StaffDashboard() {
         </select>
       </div>
 
-      {/* Complaint List */}
       <div className="flex flex-col gap-5">
         {filteredComplaints.length === 0 && (
           <p className="text-[#A6FFCB]">No complaints found.</p>
@@ -188,12 +247,10 @@ export default function StaffDashboard() {
                 <strong>Priority:</strong> {c.priority}
               </p>
 
-              {/* SLA TIMER */}
               {timeLeft && (
                 <p
-                  className={`mt-2 font-semibold ${
-                    timeLeft.total <= 0 ? "text-red-500" : "text-yellow-400"
-                  }`}
+                  className={`mt-2 font-semibold ${timeLeft.total <= 0 ? "text-red-500" : "text-yellow-400"
+                    }`}
                 >
                   Deadline:{" "}
                   {timeLeft.total > 0
@@ -210,10 +267,8 @@ export default function StaffDashboard() {
                 />
               )}
 
-              {/* STATUS UPDATE */}
               <div className="mt-4">
                 <label className="mr-2 text-[#A6FFCB]">Update Status:</label>
-
                 <select
                   value={c.status}
                   disabled={updating === c._id}
@@ -230,9 +285,7 @@ export default function StaffDashboard() {
                 </select>
 
                 {updating === c._id && (
-                  <span className="ml-3 text-[#7AFF57] animate-pulse">
-                    Updating...
-                  </span>
+                  <span className="ml-3 text-[#7AFF57] animate-pulse">Updating...</span>
                 )}
               </div>
             </div>
@@ -243,7 +296,7 @@ export default function StaffDashboard() {
   );
 }
 
-// Helper: SLA Timer
+// Helper SLA Timer
 function calculateTimeLeft(deadline) {
   if (!deadline)
     return { total: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };

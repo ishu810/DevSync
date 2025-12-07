@@ -2,6 +2,8 @@ import express from 'express';
 import multer from 'multer';
 import storage from '../Configs/cloudinary.js';
 import { protect, authorizeRoles } from '../middlewares/auth.js';
+import Complaint from '../models/Complaint.js';
+
 import {
   submitComplaint,
   getComplaints,
@@ -18,21 +20,30 @@ const upload = multer({ storage });
 
 
 
-// Submit a complaint (any logged-in user for now)
 router.post('/', protect, upload.single('photo'), submitComplaint);
 
-// Get complaints (citizen: own, staff: assigned, admin: all)
 router.get('/', protect, getComplaints);
 
 
 
-// Assign complaint to staff
 router.patch('/assign', protect, authorizeRoles('admin'), assignComplaint);
 
-// Update complaint status (staff or admin)
 
 router.patch('/status', protect, authorizeRoles('staff', 'admin'), updateComplaintStatus);
 
+router.post('/:id/rate', async (req, res) => {
+  const { rating } = req.body;
+  const complaintId = req.params.id;
+  try {
+    const complaint = await Complaint.findById(complaintId);
+    if (!complaint) return res.status(404).json({ message: 'Not found' });
+    complaint.rating = rating;
+    await complaint.save();
+    res.json({ message: 'Rating saved', complaint });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 export default router;
 

@@ -1,3 +1,5 @@
+import '@smastrom/react-rating/style.css';
+
 import React , {useContext,useEffect}from "react";
 import logo from "./assets/logo.png"; 
 import {
@@ -26,8 +28,6 @@ import { requestPermission } from "./Firebase/requestPermission";
 
 import AuthProvider from "./context/AuthContext.jsx";
 import {UserContext} from "./context/AuthContext.jsx";
-
-// import { AuthContext } from "./context/AuthContext.jsx";
 
 function NotificationHandler() {
   const { user } = useContext(UserContext);

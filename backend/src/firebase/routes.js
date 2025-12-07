@@ -1,7 +1,6 @@
 import express from "express";
 import User from "../models/User.js"; 
 const router = express.Router();
-// Save FCM token
 router.post("/", async (req, res) => {
   const { userId, token } = req.body;
   await User.findByIdAndUpdate(userId, { fcmToken: token });

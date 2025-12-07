@@ -1,6 +1,31 @@
+import dotenv from "dotenv";
+dotenv.config();
 import Complaint from '../models/Complaint.js';
 import { sendNotification, sendEmail } from '../firebase/SendNotification.js';
 import User  from '../models/User.js';
+
+
+export const rateStaff = async (req, res) => {
+  try {
+    const { staffId, ratingValue, raterId } = req.body; 
+    const user = await User.findById(staffId);
+    if (!user) return res.status(404).json({ message: "Staff not found" });
+
+    user.ratings.push({
+      rater: raterId,
+      rating: ratingValue,
+      date: new Date()
+    });
+
+    await user.save();
+    return res.json({ message: "Rating saved", ratings: user.ratings });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 export const submitComplaint = async (req, res) => {2
   try {
     if (!req.user || !req.user.id) {
@@ -69,11 +94,10 @@ export const getComplaints = async (req, res) => {
     let filter = {};
     if (req.user.role === 'citizen') filter.submitted_by = req.user.id;
     if (req.user.role === 'staff') filter.assigned_to = req.user.id;
-    // Admin sees all
 
     const complaints = await Complaint.find(filter)
       .populate('submitted_by', 'username email')
-      .populate('assigned_to', 'username email')
+      .populate('assigned_to', 'username email ratings')
       .sort({ createdAt: -1 });
     
     return res.status(200).json(complaints);
@@ -97,7 +121,8 @@ export const assignComplaint = async (req, res) => {
       { assigned_to: staffId, status: 'ASSIGNED', updatedAt: Date.now() },
       { new: true }
     )
-      .populate('assigned_to', 'username email fcmToken') // Populate fcmToken as well
+      .populate('assigned_to', 'username email fcmToken')
+       // populate Token
       .populate('submitted_by', 'username email');
 
     if (!complaint) return res.status(404).json({ success: false, message: 'Complaint not found' });
@@ -110,6 +135,9 @@ export const assignComplaint = async (req, res) => {
 
       if (staffUser.fcmToken) {
         console.log("in background messaging");
+        console.log("Private key starts with:", process.env.FIREBASE_PRIVATE_KEY.slice(0, 40));
+        console.log("Private key ends with:", process.env.FIREBASE_PRIVATE_KEY.slice(-40));
+
         await sendNotification(staffUser.fcmToken, title, body);
         console.log("background messaging done");
       }
@@ -130,6 +158,7 @@ export const assignComplaint = async (req, res) => {
           </div>
         `;
         await sendEmail(staffUser.email, title, body, html);
+        console.log("email sent");
       }
     }
 
@@ -140,9 +169,6 @@ export const assignComplaint = async (req, res) => {
   }
 };
 
-/**
- * Update Complaint Status — staff/admin
- */
 export const updateComplaintStatus = async (req, res) => {
   try {
     const { complaintId, status, remarks } = req.body;
