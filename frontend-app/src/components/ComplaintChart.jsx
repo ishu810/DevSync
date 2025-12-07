@@ -147,65 +147,66 @@ const ComplaintsChart = ({ complaints = [], onExport }) => {
       // Import html2canvas dynamically
       const html2canvas = (await import('html2canvas')).default;
       
-      const canvas = await html2canvas(chartRef.current, {
+      // Wait longer for animations to complete and chart to render
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Get the specific chart container
+      const chartElement = chartRef.current.querySelector('.recharts-wrapper') || chartRef.current;
+      
+      // Check if element has dimensions
+      const rect = chartElement.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) {
+        throw new Error('Chart element has no dimensions');
+      }
+      
+      console.log('Chart element dimensions:', rect.width, 'x', rect.height);
+      
+      const canvas = await html2canvas(chartElement, {
         backgroundColor: '#050607',
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        logging: false
+        logging: false,
+        width: rect.width,
+        height: rect.height,
+        windowWidth: rect.width,
+        windowHeight: rect.height,
+        scrollX: 0,
+        scrollY: 0,
+        x: 0,
+        y: 0
       });
 
       if (format === 'png') {
-        try {
-          // Method 1: Direct download
-          const dataUrl = canvas.toDataURL('image/png');
-          const link = document.createElement('a');
-          link.href = dataUrl;
-          link.download = `complaints-chart-${new Date().toISOString().split('T')[0]}.png`;
-          link.style.display = 'none';
-          
-          document.body.appendChild(link);
-          link.click();
-          
-          setTimeout(() => {
-            if (document.body.contains(link)) {
-              document.body.removeChild(link);
-            }
-          }, 100);
-          
-        } catch (error) {
-          console.error('PNG export method 1 failed:', error);
-          
-          // Method 2: Blob approach
-          try {
-            canvas.toBlob((blob) => {
-              if (blob) {
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `complaints-chart-${new Date().toISOString().split('T')[0]}.png`;
-                link.style.display = 'none';
-                
-                document.body.appendChild(link);
-                link.click();
-                
-                setTimeout(() => {
-                  if (document.body.contains(link)) {
-                    document.body.removeChild(link);
-                  }
-                  URL.revokeObjectURL(url);
-                }, 100);
-              }
-            }, 'image/png');
-          } catch (blobError) {
-            console.error('PNG export method 2 failed:', blobError);
-            alert('PNG export failed. Please try again.');
-          }
+        // Check if canvas has content
+        if (canvas.width === 0 || canvas.height === 0) {
+          throw new Error('Generated canvas is empty');
         }
+        
+        console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+        
+        // Convert to data URL and download
+        const dataUrl = canvas.toDataURL('image/png');
+        
+        // Verify data URL is not empty
+        if (!dataUrl || dataUrl === 'data:,') {
+          throw new Error('Generated data URL is empty');
+        }
+        
+        const link = document.createElement('a');
+        link.download = `complaints-chart-${new Date().toISOString().split('T')[0]}.png`;
+        link.href = dataUrl;
+        
+        // Force download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('Chart exported successfully');
       }
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Failed to export chart. Please try again.');
+      alert('Failed to export chart: ' + error.message + '. Please try again.');
     }
   };
 

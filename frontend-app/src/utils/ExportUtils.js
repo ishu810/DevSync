@@ -62,8 +62,148 @@ export const exportToJSON = (data, filename = 'export') => {
   }
 };
 
-// Export to PDF - Simplified version
-export const exportToPDF = (data, filename = 'export', title = 'Data Export') => {
+// Export to HTML
+export const exportToHTML = (data, filename = 'export', title = 'Data Export') => {
+  if (!data || data.length === 0) {
+    alert('No data available for export');
+    return;
+  }
+
+  try {
+    const headers = data.length > 0 ? Object.keys(data[0]) : [];
+    
+    let html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .meta {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #ddd;
+        }
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+        @media print {
+            body { background: white; }
+            .container { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>${title}</h1>
+        <div class="meta">
+            Generated on: ${new Date().toLocaleString()}<br>
+            Total Records: ${data.length}
+        </div>
+        <table>
+            <thead>
+                <tr>`;
+    
+    // Add headers
+    headers.forEach(header => {
+      html += `<th>${header}</th>`;
+    });
+    
+    html += `
+                </tr>
+            </thead>
+            <tbody>`;
+    
+    // Add data rows
+    data.forEach(item => {
+      html += '<tr>';
+      headers.forEach(header => {
+        const value = item[header] || '';
+        html += `<td>${value}</td>`;
+      });
+      html += '</tr>';
+    });
+    
+    html += `
+            </tbody>
+        </table>
+        <div class="footer">
+            <p>This report was generated on ${new Date().toLocaleDateString()}</p>
+        </div>
+    </div>
+</body>
+</html>`;
+    
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}_${new Date().toISOString().split('T')[0]}.html`;
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    link.click();
+    
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 100);
+    
+  } catch (error) {
+    console.error('HTML export error:', error);
+    alert('HTML export failed. Please try again.');
+  }
+};
+
+// Export to PDF with HTML fallback
+export const exportToPDFWithFallback = (data, filename = 'export', title = 'Data Export') => {
   if (!data || data.length === 0) {
     alert('No data available for export');
     return;
@@ -114,15 +254,21 @@ export const exportToPDF = (data, filename = 'export', title = 'Data Export') =>
         doc.save(`${filename}_${new Date().toISOString().split('T')[0]}.pdf`);
       }).catch((error) => {
         console.error('AutoTable import error:', error);
-        alert('PDF table generation failed. Please try again.');
+        // Fallback to HTML export
+        console.log('PDF failed, falling back to HTML export...');
+        exportToHTML(data, filename, title);
       });
     }).catch((error) => {
       console.error('jsPDF import error:', error);
-      alert('PDF generation failed. Please try again.');
+      // Fallback to HTML export
+      console.log('PDF failed, falling back to HTML export...');
+      exportToHTML(data, filename, title);
     });
   } catch (error) {
     console.error('PDF generation error:', error);
-    alert('PDF generation failed. Please try again.');
+    // Fallback to HTML export
+    console.log('PDF failed, falling back to HTML export...');
+    exportToHTML(data, filename, title);
   }
 };
 
@@ -153,10 +299,13 @@ export const exportComplaintsData = (complaints, format, filename = 'complaints'
       exportToJSON(transformedData, filename);
       break;
     case 'pdf':
-      exportToPDF(transformedData, filename, 'Complaints Report');
+      exportToPDFWithFallback(transformedData, filename, 'Complaints Report');
+      break;
+    case 'html':
+      exportToHTML(transformedData, filename, 'Complaints Report');
       break;
     default:
-      alert('Invalid export format. Please choose CSV, JSON, or PDF.');
+      alert('Invalid export format. Please choose CSV, JSON, PDF, or HTML.');
   }
 };
 
@@ -179,10 +328,13 @@ export const exportUsersData = (users, format, filename = 'users') => {
       exportToJSON(transformedData, filename);
       break;
     case 'pdf':
-      exportToPDF(transformedData, filename, 'Users Report');
+      exportToPDFWithFallback(transformedData, filename, 'Users Report');
+      break;
+    case 'html':
+      exportToHTML(transformedData, filename, 'Users Report');
       break;
     default:
-      alert('Invalid export format. Please choose CSV, JSON, or PDF.');
+      alert('Invalid export format. Please choose CSV, JSON, PDF, or HTML.');
   }
 };
 
@@ -223,9 +375,12 @@ export const exportDashboardStats = (stats, format, filename = 'dashboard_stats'
       exportToJSON(statsData, filename);
       break;
     case 'pdf':
-      exportToPDF(statsData, filename, 'Dashboard Statistics');
+      exportToPDFWithFallback(statsData, filename, 'Dashboard Statistics');
+      break;
+    case 'html':
+      exportToHTML(statsData, filename, 'Dashboard Statistics');
       break;
     default:
-      alert('Invalid export format. Please choose CSV, JSON, or PDF.');
+      alert('Invalid export format. Please choose CSV, JSON, PDF, or HTML.');
   }
 };
