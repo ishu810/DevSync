@@ -91,7 +91,12 @@ const ComplaintSchema = new Schema(
         type: String,
         trim: true
       }
-    }
+    },
+    tenantId: {
+  type: Schema.Types.ObjectId,
+  ref: "Tenant",
+  required: true
+}
   },
   {
     timestamps: true 

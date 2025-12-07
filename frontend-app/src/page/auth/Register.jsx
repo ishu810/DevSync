@@ -8,6 +8,7 @@ export default function Register() {
     email: "",
     password: "",
     role: "citizen",
+    tenantCode: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +48,7 @@ export default function Register() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden">
+    <div className="relative min-h-screen flex items-center mt-10 justify-center bg-black overflow-hidden">
 
       
       <div
@@ -60,7 +61,7 @@ export default function Register() {
 
       
       <div
-        className="absolute inset-0 opacity-[0.18]"
+        className="absolute inset-0 opacity-[0.18] "
         style={{
           backgroundImage:
             "repeating-linear-gradient(45deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 38px)",
@@ -78,7 +79,7 @@ export default function Register() {
 
      
         <h2
-          className="text-3xl font-bold text-center mb-8"
+          className="text-3xl font-bold text-center  mb-8"
           style={{
             fontFamily: "Orbitron",
             background: "linear-gradient(to right, #f4d000, white)",
@@ -86,7 +87,7 @@ export default function Register() {
             color: "transparent",
           }}
         >
-          ✨ Create Account
+          Admin Onboarding
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -143,22 +144,21 @@ export default function Register() {
             />
           </div>
 
+         
           <div>
             <label className="block mb-1 text-white/75 font-semibold text-sm">
-              Select Role
+              Tenant Code
             </label>
-            <select
-              name="role"
-              value={formData.role}
+            <input
+              type="text"
+              name="tenantCode"
+              placeholder="e.g. CHN, DEL, BLR"
               onChange={handleChange}
+              required
               className="w-full p-3 rounded-lg bg-white/20 border border-white/30 
-              text-white focus:border-blue-400 focus:ring-2 focus:ring-blue-500/40 
-              outline-none transition"
-            >
-              <option value="citizen" className="text-black">Citizen</option>
-              <option value="staff" className="text-black">Staff</option>
-              <option value="admin" className="text-black">Admin</option>
-            </select>
+              text-white placeholder-white/60 focus:border-blue-400 focus:ring-2 
+              focus:ring-blue-500/40 outline-none transition uppercase"
+            />
           </div>
 
       

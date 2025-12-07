@@ -10,9 +10,7 @@ export default function StaffDashboard() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("latest");
   const [stats, setStats] = useState(null);
-
-  useEffect(() => {
-    const fetchComplaints = async () => {
+ const fetchComplaints = async () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axiosInstance.get("/api/complaints");
@@ -28,6 +26,8 @@ setStats(statsRes.data);
         alert("Failed to fetch complaints. Please login again.");
       }
     };
+  useEffect(() => {
+   
     fetchComplaints();
   }, []);
 
@@ -46,7 +46,8 @@ setStats(statsRes.data);
         prev.map((c) =>
           c._id === complaintId ? { ...c, status: newStatus } : c
         )
-      );
+      ); 
+      await fetchComplaints();
 
       setUpdating(null);
     } catch (err) {

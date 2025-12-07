@@ -4,7 +4,6 @@ const UserSchema = new Schema({
   username: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
   },
   password: {
@@ -23,7 +22,12 @@ const UserSchema = new Schema({
     unique: true,
     trim: true,
     lowercase: true
-  }
+  },
+  tenantId: {
+    type: Schema.Types.ObjectId,
+    ref: "Tenant",
+    required: true,
+  },
 }, {
   timestamps: true, 
 });
