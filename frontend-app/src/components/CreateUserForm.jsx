@@ -102,16 +102,7 @@ const CreateUserForm = ({ onCreated }) => {
           </select>
         </div>
 
-        <div>
-          <label className="block text-white/70 text-sm mb-2">Department</label>
-          <input
-            type="text"
-            name="department"
-            value={formData.department}
-            onChange={handleChange}
-            className="w-full p-3 rounded-lg bg-white/20 border border-white/30 text-white focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
+        
 
         <button
           type="submit"
