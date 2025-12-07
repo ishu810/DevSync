@@ -12,8 +12,15 @@ const AdminDashboard = () => {
   const [assignData, setAssignData] = useState({ complaintId: "", staffId: "" });
   const [stats, setStats] = useState(null);
   const [activeView, setActiveView] = useState("dashboard");
+  const [selectedComplaints, setSelectedComplaints] = useState([])
   const navigate = useNavigate();
-
+  const toggleComplaint = (id) => {
+  setSelectedComplaints((prev) =>
+    prev.includes(id)
+      ? prev.filter((x) => x !== id)
+      : [...prev, id]
+  );
+};
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem("token");
@@ -54,7 +61,7 @@ console.log('yes')
     try {
       const res = await axiosInstance.patch("/api/complaints/assign", assignData);
       alert(res.data.message);
-
+      
       setComplaints((prev) =>
         prev.map((c) => (c._id === res.data.complaint._id ? res.data.complaint : c))
       );
@@ -64,6 +71,29 @@ console.log('yes')
       alert("Assign failed");
     }
   };
+  const handleBulkAssign = async () => {
+  if (!assignData.staffId || selectedComplaints.length === 0) {
+    return alert("Select staff and complaints");
+  }
+
+  try {
+    const res = await axiosInstance.patch(
+      "/api/complaints/assign-bulk",
+      {
+        staffId: assignData.staffId,
+        complaintIds: selectedComplaints,
+      }
+    );
+
+    alert(`✅ Assigned ${res.data.updated} complaints`);
+
+  
+    setSelectedComplaints([]);
+    setActiveView("dashboard");
+  } catch (err) {
+    alert("Bulk assignment failed");
+  }
+};
 
   if (loading)
     return (
@@ -191,8 +221,32 @@ console.log('yes')
         </>
         )}
       {activeView==="complaints" &&(
+            
       <>
       {/* complaint table */}
+      <div className="mt-6 bg-white/10 p-4 rounded-xl flex gap-4 items-center">
+  <select
+    className="p-3 rounded-lg bg-white/20 border border-white/30 text-white"
+    value={assignData.staffId}
+    onChange={(e) =>
+      setAssignData({ ...assignData, staffId: e.target.value })
+    }
+  >
+    <option value="">Select Staff</option>
+    {staffList.map((s) => (
+      <option key={s._id} value={s._id} className="text-black">
+        {s.username}
+      </option>
+    ))}
+  </select>
+
+  <button
+    onClick={handleBulkAssign}
+    className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-bold hover:bg-yellow-300"
+  >
+    Assign Selected ({selectedComplaints.length})
+  </button>
+</div>
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-6">
           <h2 className="font-orbitron text-xl mb-4 text-yellow-400">
             All Complaints
@@ -202,7 +256,18 @@ console.log('yes')
             <table className="w-full text-center border-collapse">
               <thead className="bg-blue-500 text-white">
                 <tr>
+                    <th className="p-3">
+                      <input
+                        type="checkbox"
+                        onChange={(e) =>
+                          setSelectedComplaints(
+                            e.target.checked ? complaints.map(c => c._id) : []
+                          )
+                        }
+                    />
+                  </th>
                   <th className="p-3 font-semibold">Title</th>
+
                   <th className="p-3 font-semibold">Status</th>
                   <th className="p-3 font-semibold">Assigned To</th>
                   <th className="p-3 font-semibold">Category</th>
@@ -212,14 +277,22 @@ console.log('yes')
               <tbody>
                 {complaints.map((c) => (
                   <tr
-                    key={c._id}
-                    className="bg-white/10 border-b border-white/20 hover:bg-white/20 transition"
-                  >
-                    <td className="p-3">{c.title}</td>
-                    <td className="p-3">{c.status}</td>
-                    <td className="p-3">{c.assigned_to?.username || "Unassigned"}</td>
-                    <td className="p-3">{c.category}</td>
-                  </tr>
+                      key={c._id}
+                      className="bg-white/10 border-b border-white/20 hover:bg-white/20 transition"
+                    >
+                      <td className="p-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedComplaints.includes(c._id)}
+                          onChange={() => toggleComplaint(c._id)}
+                        />
+                      </td>
+
+                      <td className="p-3">{c.title}</td>
+                      <td className="p-3">{c.status}</td>
+                      <td className="p-3">{c.assigned_to?.username || "Unassigned"}</td>
+                      <td className="p-3">{c.category}</td>
+                    </tr>
                 ))}
               </tbody>
 

@@ -7,10 +7,11 @@ import {
   getComplaints,
   assignComplaint,
   updateComplaintStatus,
-
+  assignBulkComplaints
 
 } from '../controllers/complaintController.js';
-
+import { deleteComplaint } from "../controllers/complaintController.js";
+import { updateComplaint } from "../controllers/complaintController.js";
 const router = express.Router();
 const upload = multer({ storage });
 
@@ -33,6 +34,14 @@ router.patch('/assign', protect, authorizeRoles('admin'), assignComplaint);
 
 router.patch('/status', protect, authorizeRoles('staff', 'admin'), updateComplaintStatus);
 
+router.patch(
+  "/assign-bulk",
+  protect,
+  authorizeRoles("admin"),
+  assignBulkComplaints
+);
+router.patch("/:id",protect,authorizeRoles("citizen"),upload.single("photo"),updateComplaint);
+router.delete("/:id",protect,authorizeRoles("citizen"),deleteComplaint)
 
 export default router;
 

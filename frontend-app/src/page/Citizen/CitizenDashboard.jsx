@@ -10,6 +10,9 @@ export default function CitizenDashboard() {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [stats, setStats] = useState(null);
+  const [complaints, setComplaints] = useState([]);
+const [editComplaint, setEditComplaint] = useState(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import { getAdminStats } from '../controllers/userController.js';
 import { adminCreateUser } from '../controllers/userController.js';
 import multer from "multer";
 import { bulkCreateUsers } from '../controllers/userController.js';
+import { updateComplaintStatus } from '../controllers/complaintController.js';
 
 const upload=multer({dest:"uploads/"});
 

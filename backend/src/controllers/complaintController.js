@@ -243,4 +243,114 @@ export const updateComplaintStatus = async (req, res) => {
       message: "Error updating status",
     });
   }
+  
 };
+export const assignBulkComplaints=async(req,res)=>{
+  try {
+    console.log("bulk assing")
+    const{complaintIds,staffId}=req.body;
+    if(!complaintIds?.length||!staffId){
+      return res.status(400).json({msg:"Invalid Payload"});
+    }
+    console.log(complaintIds)
+    const staff=await User.findOne({
+      _id:staffId,
+      role:"staff",
+      tenantId:req.user.tenantId,
+    })
+    console.log(staff)
+    if(!staff){
+      return res.status(400).json({msg:"Invalid Staff"});
+
+    }
+
+    const result=await Complaint.updateMany(
+      {
+        _id:{$in:complaintIds},
+        tenantId:req.user.tenantId,
+
+      },
+      {
+        assigned_to:staffId,
+        status:"ASSIGNED",
+        updatedAt:Date.now(),
+      }
+    );
+     return res.status(200).json({
+      success: true,
+      matched: result.matchedCount,
+      updated: result.modifiedCount,
+     });
+     
+  }catch(err){
+    console.log(err);
+    res.status(500).json({msg:"Bulk complaints failed"})
+  }
+};
+export const deleteComplaint=async(req,res)=>{
+  try{
+    const complaint =await Complaint.findOne({
+      _id:req.params.id,
+      submitted_by:req.user.id,
+      tenantId:req.user.tenantId,
+      status:"OPEN",
+    });
+    if(!complaint){
+      return res.status(400).json({
+        msg:"Cannot delete this complaint",
+      })
+    }
+    await complaint.deleteOne();
+    res.json({success:true,msg:"Complaint deleted"});
+  } catch(err){
+    console.log(err);
+    res.status(500).json({msg:"Delete failed"})
+  }
+}
+export const updateComplaint = async (req, res) => {
+  try {
+    const complaintId = req.params.id;
+    const { title, description, category, priority } = req.body;
+
+    const complaint = await Complaint.findOne({
+      _id: complaintId,
+      submitted_by: req.user.id,
+      tenantId: req.user.tenantId,
+    });
+
+    if (!complaint) {
+      return res.status(404).json({ msg: "Complaint not found" });
+    }
+
+    if (complaint.status !== "OPEN") {
+      return res.status(400).json({
+        msg: "Cannot edit complaint after assignment",
+      });
+    }
+
+    // ✅ Update fields only if provided
+    complaint.title = title ?? complaint.title;
+    complaint.description = description ?? complaint.description;
+    complaint.category = category ?? complaint.category;
+    complaint.priority = priority ?? complaint.priority;
+
+    // ✅ Update photo ONLY if new file uploaded
+    if (req.file?.path) {
+      complaint.photo_url = req.file.path;
+    }
+
+    complaint.updatedAt = Date.now();
+    await complaint.save();
+
+    res.json({
+      success: true,
+      msg: "Complaint updated",
+      complaint,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Update failed" });
+  }
+};
+
+  
