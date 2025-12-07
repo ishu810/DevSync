@@ -1,17 +1,16 @@
-
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import CommentSection from "../Citizen/CommentSection";
-
+import StatCard from "../../StatCard";
+import CreateUserForm from "../../CreateUserForm";
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [complaints, setComplaints] = useState([]);
   const [staffList, setStaffList] = useState([]);
   const [assignData, setAssignData] = useState({ complaintId: "", staffId: "" });
-  const [expandedRow, setExpandedRow] = useState(null);
-
+  const [stats, setStats] = useState(null);
+  const [activeView, setActiveView] = useState("dashboard");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,10 +28,14 @@ const AdminDashboard = () => {
 
         const complaintRes = await axiosInstance.get("/api/complaints");
         setComplaints(Array.isArray(complaintRes.data) ? complaintRes.data : []);
-
+        
         const staffRes = await axiosInstance.get("/api/users/staff");
         setStaffList(staffRes.data || []);
-
+         console.log("reached")
+     
+           const adminStats = await axiosInstance.get("/api/users/admin/stats");
+setStats(adminStats.data||[]);
+console.log('yes')
         setLoading(false);
       } catch (err) {
         alert("Authorization failed");
@@ -52,9 +55,7 @@ const AdminDashboard = () => {
       alert(res.data.message);
 
       setComplaints((prev) =>
-        prev.map((c) =>
-          c._id === res.data.complaint._id ? res.data.complaint : c
-        )
+        prev.map((c) => (c._id === res.data.complaint._id ? res.data.complaint : c))
       );
 
       setAssignData({ complaintId: "", staffId: "" });
@@ -73,27 +74,71 @@ const AdminDashboard = () => {
   return (
     <div className="flex min-h-screen bg-[#0B0D10] text-white relative font-inter overflow-hidden">
 
-      {/* GRID BACKGROUND */}
-      <div className="absolute inset-0 opacity-[0.12] pointer-events-none bg-[url('https://i.ibb.co/bvBWG0B/grid.png')]"></div>
+    
+      <div className="absolute inset-0 opacity-[0.5] pointer-events-none bg-[url('./assets/download.jpg')]  bg-top blur-l "></div>
 
-      {/* GLOW EFFECTS */}
-      <div className="absolute w-[380px] h-[380px] bg-green-500 blur-[150px] opacity-30 top-[-100px] left-[-100px]"></div>
+      {/* NEON GLOWS */}
+      <div className="absolute w-[380px] h-[380px] bg-blue-500 blur-[150px] opacity-30 top-[-100px] left-[-100px]"></div>
       <div className="absolute w-[400px] h-[400px] bg-yellow-400 blur-[150px] opacity-25 bottom-[-120px] right-[-150px]"></div>
 
       {/* SIDEBAR */}
       <aside className="w-64 bg-white/5 backdrop-blur-xl border-r border-white/10 p-6 z-20">
-        <h1 className="font-orbitron text-2xl text-yellow-400 text-center tracking-wider">
+        <h1 className="font-orbitron text-2xl text-yellow-400 text-center tracking-wider mt-20">
           Admin Panel
         </h1>
 
         <p className="mt-3 text-center text-white/80">👑 {username}</p>
+
+        <div className="mt-6 space-y-3">
+  <button
+    onClick={() => setActiveView("dashboard")}
+    className={`w-full rounded-lg px-4 py-2 text-left transition
+      ${activeView === "dashboard"
+        ? "bg-blue-500/30 border border-blue-400"
+        : "bg-white/10 hover:bg-white/20"}`}
+  >
+    Dashboard
+  </button>
+
+  <button
+    onClick={() => setActiveView("complaints")}
+    className={`w-full rounded-lg px-4 py-2 text-left transition
+      ${activeView === "complaints"
+        ? "bg-blue-500/30 border border-blue-400"
+        : "bg-white/10 hover:bg-white/20"}`}
+  >
+    Complaints
+  </button>
+
+  <button
+    onClick={() => setActiveView("users")}
+    className={`w-full rounded-lg px-4 py-2 text-left transition
+      ${activeView === "users"
+        ? "bg-blue-500/30 border border-blue-400"
+        : "bg-white/10 hover:bg-white/20"}`}
+  >
+    Create User
+  </button>
+</div>
+
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 p-10 z-10">
-
+      <main className="flex-1 p-10 z-10 mt-12 justify-center ">
+        {activeView==="dashboard" && (
+          <>
+        {stats && (
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10 max-w-5xl justify-center">
+    <StatCard label="Total Complaints" value={stats.total} color="#FFD93C" />
+    <StatCard label="Open" value={stats.open} color="#FF4444" />
+    <StatCard label="In Progress" value={stats.inProgress} color="#00CFFF" />
+    <StatCard label="Resolved" value={stats.resolved} color="#4CAF50" />
+    <StatCard label="Closed" value={stats.closed} color="#9CA3AF" />
+    <StatCard label="SLA Violations" value={stats.slaViolations} color="#FF0000" />
+  </div>
+)}
         {/* ASSIGN COMPLAINT CARD */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-6 mb-10">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 mt-10 shadow-2xl rounded-2xl p-6 mb-10">
           <h2 className="font-orbitron text-xl mb-4 text-yellow-400">Assign Complaints</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -102,7 +147,7 @@ const AdminDashboard = () => {
               onChange={(e) =>
                 setAssignData({ ...assignData, complaintId: e.target.value })
               }
-              className="p-3 rounded-lg bg-white/20 border border-white/30 text-white focus:ring-2 focus:ring-green-400"
+              className="p-3 rounded-lg bg-white/20 border border-white/30 text-white focus:ring-2 focus:ring-blue-400"
             >
               <option value="">Select Complaint</option>
               {complaints.map((c) => (
@@ -117,7 +162,7 @@ const AdminDashboard = () => {
               onChange={(e) =>
                 setAssignData({ ...assignData, staffId: e.target.value })
               }
-              className="p-3 rounded-lg bg-white/20 border border-white/30 text-white focus:ring-2 focus:ring-green-400"
+              className="p-3 rounded-lg bg-white/20 border border-white/30 text-white focus:ring-2 focus:ring-blue-400"
             >
               <option value="">Select Staff</option>
               {staffList.map((s) => (
@@ -129,53 +174,56 @@ const AdminDashboard = () => {
 
             <button
               onClick={handleAssign}
-              className="bg-green-400 text-black font-bold rounded-lg px-6 py-3 shadow-lg hover:bg-green-300 transition"
+              className="bg-yellow-400 text-black font-bold rounded-lg px-6 py-3 shadow-lg hover:bg-yellow-300 transition"
             >
               Assign
             </button>
           </div>
         </div>
-
-        {/* COMPLAINT SECTION */}
+        </>
+        )}
+      {activeView==="complaints" &&(
+      <>
+      {/* complaint table */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-6">
           <h2 className="font-orbitron text-xl mb-4 text-yellow-400">
             All Complaints
           </h2>
 
-          <div className="space-y-4">
-            {complaints.map((c) => (
-              <div
-                key={c._id}
-                className="bg-white/10 border border-white/20 rounded-xl p-4 shadow-md"
-              >
-                <div
-                  className="flex justify-between cursor-pointer"
-                  onClick={() => setExpandedRow(expandedRow === c._id ? null : c._id)}
-                >
-                  <div>
-                    <h3 className="font-semibold text-green-300">{c.title}</h3>
-                    <p className="text-sm text-white/70">
-                      Status: {c.status} | Priority: {c.priority}
-                    </p>
-                  </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-center border-collapse">
+              <thead className="bg-blue-500 text-white">
+                <tr>
+                  <th className="p-3 font-semibold">Title</th>
+                  <th className="p-3 font-semibold">Status</th>
+                  <th className="p-3 font-semibold">Assigned To</th>
+                  <th className="p-3 font-semibold">Category</th>
+                </tr>
+              </thead>
 
-                  <span className="text-yellow-400">
-                    {expandedRow === c._id ? "▼" : "►"}
-                  </span>
-                </div>
+              <tbody>
+                {complaints.map((c) => (
+                  <tr
+                    key={c._id}
+                    className="bg-white/10 border-b border-white/20 hover:bg-white/20 transition"
+                  >
+                    <td className="p-3">{c.title}</td>
+                    <td className="p-3">{c.status}</td>
+                    <td className="p-3">{c.assigned_to?.username || "Unassigned"}</td>
+                    <td className="p-3">{c.category}</td>
+                  </tr>
+                ))}
+              </tbody>
 
-                {/* EXPANDED COMMENT UI */}
-                {expandedRow === c._id && (
-                  <div className="mt-4 bg-[rgba(0,40,0,0.35)] border border-[rgba(0,255,0,0.25)] rounded-lg p-4 shadow">
-                    {/* ADMIN COMMENT SECTION */}
-                    <CommentSection complaintId={c._id} />
-                  </div>
-                )}
-              </div>
-            ))}
+            </table>
           </div>
-
         </div>
+         </>
+      )}
+      {activeView === "users" && (
+          <CreateUserForm onCreated={() => setActiveView("dashboard")} />
+      )}
+     
       </main>
     </div>
   );
