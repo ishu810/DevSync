@@ -1,4 +1,4 @@
-explain in deatil:import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   LineChart,
   Line,

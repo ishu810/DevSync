@@ -3,6 +3,7 @@ import axiosInstance from "../../../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import StatCard from "../../StatCard";
 import CreateUserForm from "../../CreateUserForm";
+import ComplaintsChart from "../../ComplaintChart";
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
@@ -38,7 +39,14 @@ setStats(adminStats.data||[]);
 console.log('yes')
         setLoading(false);
       } catch (err) {
-        alert("Authorization failed");
+        console.error("Dashboard fetch error:", err);
+        if (err.response?.status === 401) {
+          alert("Session expired. Please login again.");
+        } else if (err.response?.status === 403) {
+          alert("Access denied. Admin privileges required.");
+        } else {
+          alert("Failed to load dashboard data.");
+        }
         navigate("/login");
       }
     };
@@ -137,8 +145,17 @@ console.log('yes')
     <StatCard label="SLA Violations" value={stats.slaViolations} color="#FF0000" />
   </div>
 )}
-        {/* ASSIGN COMPLAINT CARD */}
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 mt-10 shadow-2xl rounded-2xl p-6 mb-10">
+        
+        {/* Complaints Chart */}
+        <div className="mb-10">
+          <ComplaintsChart complaints={complaints} />
+        </div>
+        </>
+        )}
+      {activeView==="complaints" &&(
+      <>
+      {/* ASSIGN COMPLAINT CARD */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-6 mb-10">
           <h2 className="font-orbitron text-xl mb-4 text-yellow-400">Assign Complaints</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -180,10 +197,6 @@ console.log('yes')
             </button>
           </div>
         </div>
-        </>
-        )}
-      {activeView==="complaints" &&(
-      <>
       {/* complaint table */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-6">
           <h2 className="font-orbitron text-xl mb-4 text-yellow-400">
