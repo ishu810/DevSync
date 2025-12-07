@@ -3,6 +3,7 @@ import axiosInstance from "../../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import StatCard from "../../components/StatCard";
 import CreateUserForm from "../../components/CreateUserForm";
+import BulkUserUpload from "../../components/BulkUserUpload";
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
@@ -119,12 +120,19 @@ console.log('yes')
   >
     Create User
   </button>
+  <button onClick={() => setActiveView("bulk")}  className={`w-full rounded-lg px-4 py-2 text-left transition
+      ${activeView === "bulk"
+        ? "bg-blue-500/30 border border-blue-400"
+        : "bg-white/10 hover:bg-white/20"}`}>Bulk Upload</button>
+
 </div>
 
       </aside>
 
       {/* MAIN CONTENT */}
       <main className="flex-1 p-10 z-10 mt-12 justify-center ">
+        {activeView === "bulk" && <BulkUserUpload />}
+
         {activeView==="dashboard" && (
           <>
         {stats && (
