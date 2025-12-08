@@ -352,5 +352,45 @@ export const updateComplaint = async (req, res) => {
     res.status(500).json({ msg: "Update failed" });
   }
 };
+export const staffBulkUpdateComplaints = async(req,res)=>{
+  try{
+    if(req.user.role!="staff"){
+      return res.status(403).json({msg:"only Staff allowed"});
 
+    }
+    const {complaintIds,status,remarks}=req.body;
+    if(!complaintIds?.length||!status){
+      return res.status(403).json({msg:"Invalid Payload"});
+    }
+    const allowedStatuses=["IN_PROGRESS","RESOLVED","CLOSED"];
+    if(!allowedStatuses.includes(status)){
+      return res.status(400).json({msg:"Invalid status"});
+    }
+    const result=await Complaint.updateMany({
+      _id:{$in:complaintIds},
+      assigned_to:req.user._id,
+      tenantId:req.user.tenantId,
+
+    },
+    {
+      $set:{
+        status,
+        remarks,
+        updatedAt:Date.now(),
+      },
+    }
+  
+
+  );
+  res.json({
+    succes:true,
+    updated:result.modifiedCount,
+
+  });
+  }catch(err){
+    console.error(err);
+    res.status(500).json({msg:"Bulk Update failed"});
+
+  }
+}
   

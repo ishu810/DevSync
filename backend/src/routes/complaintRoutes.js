@@ -42,6 +42,6 @@ router.patch(
 );
 router.patch("/:id",protect,authorizeRoles("citizen"),upload.single("photo"),updateComplaint);
 router.delete("/:id",protect,authorizeRoles("citizen"),deleteComplaint)
-
+router.patch("/staff/bulk-update")
 export default router;
 
