@@ -18,7 +18,8 @@ export default function StaffDashboard() {
       try {
         const res = await axiosInstance.get("/api/complaints");
         console.log("engineer name", res.data[0].assigned_to.username)
-        var namee = res.data[0].assigned_to.username;
+        var namee = res.data[0].assigned_to;
+        console.log(res)
         console.log("const", namee)
         // console.log("ratings", res.)
         // console.log(res.data)
@@ -45,10 +46,10 @@ export default function StaffDashboard() {
     fetchComplaints();
 
   }, []);
-  //   useEffect(() => {
-  //   console.log("Username is now:", userna);
-  //   console.log("rate is now",ratearr);
-  // }, [userna]);
+    useEffect(() => {
+    console.log("Username is now:", userna);
+    console.log("rate is now",ratearr);
+  }, [userna]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -72,7 +73,8 @@ export default function StaffDashboard() {
         prev.map((c) =>
           c._id === complaintId ? { ...c, status: newStatus } : c
         )
-      );
+      ); 
+      await fetchComplaints();
 
       setUpdating(null);
     } catch (err) {
@@ -101,6 +103,7 @@ export default function StaffDashboard() {
     const [rating, setRating] = useState(0);
 //***********rating calculation */
 useEffect(() => {
+  console.log("in calculatiOn of rating")
   if (!Array.isArray(ratearr) || ratearr.length === 0) {
     setRating(0);
     return;

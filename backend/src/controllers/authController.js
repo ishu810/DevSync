@@ -1,17 +1,17 @@
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-
+import Tenant from '../models/Tenant.js';
 
 const isEmail = (input) =>
   /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,})+$/.test(input);
 
 //  Register a new user
 export const registerUser = async (req, res) => {
-  console.log('Incoming registration body:', req.body);
-  const { username, email, password, role = 'citizen' } = req.body;
-
-    if (!username || !email || !password) {
+  
+  const { username, email, password,  tenantCode } = req.body;
+   console.log(tenantCode)
+    if (!username || !email || !password ||!tenantCode) {
     return res.status(400).json({ msg: 'Please fill all fields' });
   }
   if (password.length < 6) {
@@ -19,12 +19,18 @@ export const registerUser = async (req, res) => {
     }
 
   try {
+    const tenant = await Tenant.findOne({ code: tenantCode.trim().toUpperCase() });
+    if (!tenant)
+      return res.status(400).json({ msg: "Invalid tenant code" });
     
-    let existingUser = await User.findOne({ $or: [{ email }, { username }] });
+      const existingUser = await User.findOne({
+      tenantId: tenant._id,
+      $or: [{ email: email.toLowerCase() }, { username }],
+    });
     if (existingUser) {
       return res
         .status(400)
-        .json({ msg: 'User already exists with that email or username.' });
+        .json({ msg: 'Admin already exists with that email or username.' });
     }
 
     // Hash password
@@ -36,14 +42,16 @@ export const registerUser = async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      role,
+      role:'admin',
+      tenantId: tenant._id,
     });
 
     await user.save();
+    console.log("saved")
 
     // Create JWT
     const payload = {
-       user: { id: user._id, role: user.role, username: user.username },
+       user: { id: user._id, role: user.role, username: user.username,  tenantId: user.tenantId },
      };
     jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' }, (err, token) => {
       if (err) throw err;
@@ -55,8 +63,9 @@ export const registerUser = async (req, res) => {
           username: user.username,
           email: user.email,
           role: user.role,
+          tenantId: user.tenantId,
         },
-        msg: 'User registered successfully',
+        msg: 'Admin registered successfully',
       });
     });
   } catch (err) {
@@ -67,54 +76,52 @@ export const registerUser = async (req, res) => {
 
 // login logic
 export const loginUser = async (req, res) => {
-  const { identifier, password } = req.body; 
+  const { identifier, password } = req.body;
+
+  if (!identifier || !password ) {
+    return res.status(400).json({
+      msg: "Email/Username, password and tenant code are required",
+    });
+  }
 
   try {
-    //  Validate inputs
-    if (!identifier || !password) {
-      return res.status(400).json({ msg: "Email/Username and password are required" });
-    }
 
-    //  Find user by email or username
-    let user;
-    if (isEmail(identifier)) {
-      user = await User.findOne({ email: identifier.trim().toLowerCase() });
-    } else {
-      user = await User.findOne({ username: identifier.trim() });
-    }
+    const query = isEmail(identifier)
+      ? { email: identifier.trim().toLowerCase() }
+      : { username: identifier.trim() };
+
+    const user = await User.findOne({
+      ...query,
+      
+    });
 
     if (!user) {
       return res.status(400).json({ msg: "Invalid Credentials" });
     }
 
-    //  Compare password securely
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ msg: "Invalid Credentials" });
     }
 
-    //  Create JWT payload
     const payload = {
-      user: { id: user._id, role: user.role, username: user.username },
+      user: {
+        id: user._id,
+        role: user.role,
+        username: user.username,
+        tenantId: user.tenantId,
+      },
     };
 
-    //  Sign and send token
-    jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" }, (err, token) => {
-      if (err) throw err;
-
-      res.status(200).json({
-        token,
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          role: user.role,
-        },
-      });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
     });
+
+    res.status(200).json({ token, user: payload.user });
   } catch (err) {
-    console.error("Login Error:", err.message);
+    console.error("Login Error:", err);
     res.status(500).json({ msg: "Server Error" });
   }
 };
+
 

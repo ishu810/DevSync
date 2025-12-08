@@ -41,7 +41,9 @@ app.use('/api/complaints', complaintRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use('/api/users', userRoutes);
 app.post("/api/v1/save-token",saveNotificationToken)
-
+// app.post("/api/complaint/",async(req,res)=>{
+    
+// })
 app.post('/api/users/:id/rate', protect, async (req, res) => {
   const staffId = req.params.id;
   const raterId = req.user._id;  // assuming auth middleware sets req.user

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import StatCard from "../../components/StatCard";
+import CreateUserForm from "../../components/CreateUserForm";
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
@@ -11,6 +12,7 @@ const AdminDashboard = () => {
   const [assignData, setAssignData] = useState({ complaintId: "", staffId: "" });
   const [timeLefts, setTimeLefts] = useState({}); 
   const [stats, setStats] = useState(null);
+  const [activeView, setActiveView] = useState("dashboard");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -72,7 +74,10 @@ console.log('yes')
       return alert("Select complaint & staff");
 
     try {
+
       const res = await axiosInstance.patch("/api/complaints/assign", assignData);
+    console.log("in handle assign function");
+
       alert(res.data.message);
 
       setComplaints((prev) =>
@@ -96,7 +101,7 @@ console.log('yes')
     <div className="flex min-h-screen bg-[#0B0D10] text-white relative font-inter overflow-hidden">
 
     
-      <div className="absolute inset-0 opacity-[0.4] pointer-events-none bg-[url('./assets/devsync.jpg')] bg-top blur-l"></div>
+      <div className="absolute inset-0 opacity-[0.5] pointer-events-none bg-[url('./assets/download.jpg')]  bg-top blur-l "></div>
 
       {/* NEON GLOWS */}
       <div className="absolute w-[380px] h-[380px] bg-blue-500 blur-[150px] opacity-30 top-[-100px] left-[-100px]"></div>
@@ -111,30 +116,51 @@ console.log('yes')
         <p className="mt-3 text-center text-white/80">👑 {username}</p>
 
         <div className="mt-6 space-y-3">
-          <button className="w-full bg-white/10 hover:bg-white/20 transition rounded-lg px-4 py-2 text-left border border-transparent hover:border-blue-400 shadow-md">
-            Dashboard
-          </button>
-          <button className="w-full bg-white/10 hover:bg-white/20 transition rounded-lg px-4 py-2 text-left">
-            Complaints
-          </button>
-          <button className="w-full bg-white/10 hover:bg-white/20 transition rounded-lg px-4 py-2 text-left">
-            Staff
-          </button>
-        </div>
+  <button
+    onClick={() => setActiveView("dashboard")}
+    className={`w-full rounded-lg px-4 py-2 text-left transition
+      ${activeView === "dashboard"
+        ? "bg-blue-500/30 border border-blue-400"
+        : "bg-white/10 hover:bg-white/20"}`}
+  >
+    Dashboard
+  </button>
+
+  <button
+    onClick={() => setActiveView("complaints")}
+    className={`w-full rounded-lg px-4 py-2 text-left transition
+      ${activeView === "complaints"
+        ? "bg-blue-500/30 border border-blue-400"
+        : "bg-white/10 hover:bg-white/20"}`}
+  >
+    Complaints
+  </button>
+
+  <button
+    onClick={() => setActiveView("users")}
+    className={`w-full rounded-lg px-4 py-2 text-left transition
+      ${activeView === "users"
+        ? "bg-blue-500/30 border border-blue-400"
+        : "bg-white/10 hover:bg-white/20"}`}
+  >
+    Create User
+  </button>
+</div>
+
       </aside>
 
       {/* MAIN CONTENT */}
       <main className="flex-1 p-10 z-10 mt-12 justify-center ">
+        {activeView==="dashboard" && (
+          <>
         {stats && (
-  <div className="flex justify-center mb-10">
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl w-full">
-      <StatCard label="Total Complaints" value={stats.total} color="#FFD93C" />
-      <StatCard label="Open" value={stats.open} color="#FF4444" />
-      <StatCard label="In Progress" value={stats.inProgress} color="#00CFFF" />
-      <StatCard label="Resolved" value={stats.resolved} color="#4CAF50" />
-      <StatCard label="Closed" value={stats.closed} color="#9CA3AF" />
-      <StatCard label="SLA Violations" value={stats.slaViolations} color="#FF0000" />
-    </div>
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10 max-w-5xl justify-center">
+    <StatCard label="Total Complaints" value={stats.total} color="#FFD93C" />
+    <StatCard label="Open" value={stats.open} color="#FF4444" />
+    <StatCard label="In Progress" value={stats.inProgress} color="#00CFFF" />
+    <StatCard label="Resolved" value={stats.resolved} color="#4CAF50" />
+    <StatCard label="Closed" value={stats.closed} color="#9CA3AF" />
+    <StatCard label="SLA Violations" value={stats.slaViolations} color="#FF0000" />
   </div>
 )}
         {/* ASSIGN COMPLAINT CARD */}
@@ -180,7 +206,10 @@ console.log('yes')
             </button>
           </div>
         </div>
-
+        </>
+        )}
+      {activeView==="complaints" &&(
+      <>
       {/* complaint table */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-6">
           <h2 className="font-orbitron text-xl mb-4 text-yellow-400">
@@ -223,6 +252,12 @@ console.log('yes')
             </table>
           </div>
         </div>
+         </>
+      )}
+      {activeView === "users" && (
+          <CreateUserForm onCreated={() => setActiveView("dashboard")} />
+      )}
+     
       </main>
     </div>
   );

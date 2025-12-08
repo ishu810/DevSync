@@ -1,9 +1,10 @@
 import User from '../models/User.js';
 import Complaint from '../models/Complaint.js';
+import bcrypt from "bcryptjs";
 
 export const getAllStaff = async (req, res) => {
   try {
-    const staff = await User.find({ role: 'staff' }).select('_id username email');
+    const staff = await User.find({ role: 'staff',tenantId:req.user.tenantId, }).select('_id username email');
     res.status(200).json(staff);
   } catch (err) {
     console.error(err);
@@ -14,15 +15,16 @@ export const getStats=async (req,res)=>{
   console.log("stats")
   try{
     const userId=req.user.id;
-    const total=await Complaint.countDocuments({submitted_by:userId})
-    const open=await Complaint.countDocuments({submitted_by:userId,status:'OPEN'});
-     const closed=await Complaint.countDocuments({submitted_by:userId,status:'CLOSED'});
-     const resolved=await Complaint.countDocuments({submitted_by:userId,status:'RESOLVED'})
-      const inprogress=await Complaint.countDocuments({submitted_by:userId,status:'IN_PROGRESS'})
-       const lastComplaint = await Complaint.findOne({ submitted_by: userId })
+    const tenantId=req.user.tenantId;
+    const total=await Complaint.countDocuments({submitted_by:userId,tenantId})
+    const open=await Complaint.countDocuments({submitted_by:userId,status:'OPEN',tenantId});
+     const closed=await Complaint.countDocuments({submitted_by:userId,status:'CLOSED',tenantId});
+     const resolved=await Complaint.countDocuments({submitted_by:userId,status:'RESOLVED',tenantId})
+      const inprogress=await Complaint.countDocuments({submitted_by:userId,status:'IN_PROGRESS',tenantId})
+       const lastComplaint = await Complaint.findOne({ submitted_by: userId,tenantId })
       .sort({ updatedAt: -1 })
       .select("status title updatedAt");
-      res.status(200).json({total,open,closed,resolved,inprogress,lastComplaintStatus:lastComplaint.status||null})
+      res.status(200).json({total,open,closed,resolved,inprogress,lastComplaintStatus:lastComplaint?.status||null})
   }
   catch(err){
     console.log(err)
@@ -32,29 +34,35 @@ export const getStats=async (req,res)=>{
 };
 export const getAdminStats = async (req, res) => {
  try {
+     const tenantId = req.user.tenantId;
+    const filter = { tenantId };
+    //  Total complaints for the tenant
+    const total = await Complaint.countDocuments(filter);
 
-    const total = await Complaint.countDocuments({});
-
-    const open = await Complaint.countDocuments({ status: "OPEN" });
-    const inProgress = await Complaint.countDocuments({ status: "IN_PROGRESS" });
-    const closed = await Complaint.countDocuments({ status: "CLOSED" });
-    const resolved = await Complaint.countDocuments({ status: "RESOLVED" });
+    //  Status counts
+    const open = await Complaint.countDocuments({...filter, status: "OPEN" });
+    const inProgress = await Complaint.countDocuments({ ...filter,status: "IN_PROGRESS" });
+    const closed = await Complaint.countDocuments({...filter,status: "CLOSED" });
+    const resolved = await Complaint.countDocuments({...filter, status: "RESOLVED" });
 
     const slaViolations = await Complaint.countDocuments({
+      ...filter,
       status: { $nin: ["RESOLVED", "CLOSED"] },
       updatedAt: { $lt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) }
     });
 
     const byCategory = await Complaint.aggregate([
+      {$match:filter},
       { $group: { _id: "$category", count: { $sum: 1 } } }
     ]);
 
     const byEngineer = await Complaint.aggregate([
-      { $match: { assigned_to: { $ne: null } } },
+      { $match: { ...filter,assigned_to: { $ne: null } } },
       { $group: { _id: "$assigned_to", count: { $sum: 1 } } }
     ]);
 
     const dailyTrend = await Complaint.aggregate([
+       {$match:filter},
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
@@ -84,40 +92,44 @@ export const getAdminStats = async (req, res) => {
 export const getStaffStats = async (req, res) => {
   try {
     const staffId = req.user.id;
+    const tenantId = req.user.tenantId;
 
-    const total = await Complaint.countDocuments({ assigned_to: staffId });
+    const baseFilter = {
+      assigned_to: staffId,
+      tenantId,
+    };
+
+    const total = await Complaint.countDocuments(baseFilter);
     const open = await Complaint.countDocuments({
-      assigned_to: staffId,
-      status: "OPEN"
+      ...baseFilter,
+      status: "OPEN",
     });
-
     const assigned = await Complaint.countDocuments({
-      assigned_to: staffId,
-      status: "ASSIGNED"
+      ...baseFilter,
+      status: "ASSIGNED",
     });
-
     const inProgress = await Complaint.countDocuments({
-      assigned_to: staffId,
-      status: "IN_PROGRESS"
+      ...baseFilter,
+      status: "IN_PROGRESS",
     });
-
     const resolved = await Complaint.countDocuments({
-      assigned_to: staffId,
-      status: "RESOLVED"
+      ...baseFilter,
+      status: "RESOLVED",
     });
-
     const closed = await Complaint.countDocuments({
-      assigned_to: staffId,
-      status: "CLOSED"
+      ...baseFilter,
+      status: "CLOSED",
     });
 
     const slaViolations = await Complaint.countDocuments({
-      assigned_to: staffId,
+      ...baseFilter,
       status: { $nin: ["RESOLVED", "CLOSED"] },
-      updatedAt: { $lt: new Date(Date.now() - 48 * 60 * 60 * 1000) }
+      updatedAt: {
+        $lt: new Date(Date.now() - 48 * 60 * 60 * 1000),
+      },
     });
 
-    const latest = await Complaint.findOne({ assigned_to: staffId })
+    const latest = await Complaint.findOne(baseFilter)
       .sort({ updatedAt: -1 })
       .select("title status updatedAt");
 
@@ -129,9 +141,8 @@ export const getStaffStats = async (req, res) => {
       resolved,
       closed,
       slaViolations,
-      latest
+      latest,
     });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Error fetching staff stats" });
@@ -152,6 +163,45 @@ export const getUserById = async (req, res) => {
   }
 };
 
+export const adminCreateUser = async (req, res) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ msg: "Forbidden" });
+  }
+
+  const { username, email, password, role } = req.body;
+
+  if (!["staff", "citizen"].includes(role)) {
+    return res.status(400).json({ msg: "Invalid role" });
+  }
+
+  const exists = await User.findOne({
+    tenantId: req.user.tenantId,
+    $or: [{ email }, { username }],
+  });
+
+  if (exists) {
+    return res
+      .status(400)
+      .json({ msg: "User already exists in this tenant" });
+  }
+
+  const hashed = await bcrypt.hash(password, 10);
+
+  const user = await User.create({
+    username,
+    email: email.toLowerCase(),
+    password: hashed,
+    role,
+    tenantId: req.user.tenantId,
+  });
+
+  res.status(201).json({
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+  });
+};
 // export const hi = async (req, res) => {
 //   console.log("hi");
 //   res.send("hi");

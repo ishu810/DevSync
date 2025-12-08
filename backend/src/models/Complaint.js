@@ -100,6 +100,11 @@ const ComplaintSchema = new Schema(
 
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
+    tenantId: {
+  type: Schema.Types.ObjectId,
+  ref: "Tenant",
+  required: true
+}
   },
   {
     timestamps: true 

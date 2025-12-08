@@ -44,6 +44,9 @@ router.post('/:id/rate', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+router.get('/hi',async(req,res)=>{
+    console.log("HI");
+})
 
 export default router;
 

@@ -5,7 +5,6 @@ const UserSchema = new Schema({
   username: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
   },
   password: {
@@ -43,6 +42,11 @@ ratings: [
   //   min: 1,
   //   max: 5
   // }
+  tenantId: {
+    type: Schema.Types.ObjectId,
+    ref: "Tenant",
+    required: true,
+  },
 }, {
   timestamps: true, 
 });
