@@ -31,7 +31,15 @@ export default function Login() {
         setError("Login failed. No token received.");
       }
     } catch (err) {
-      setError(err.response?.data?.msg || "Invalid credentials.");
+      if (err.response?.status === 429) {
+        const remainingTime = err.response?.data?.remainingTime || err.response?.data?.retryAfter;
+        const message = remainingTime 
+          ? `Too many login attempts. Please try again in ${remainingTime} seconds.`
+          : "Too many login attempts. Please try again later.";
+        setError(message);
+      } else {
+        setError(err.response?.data?.msg || "Invalid credentials.");
+      }
     } finally {
       setIsLoading(false);
     }

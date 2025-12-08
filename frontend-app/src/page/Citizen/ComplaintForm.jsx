@@ -86,7 +86,15 @@ const ComplaintForm = () => {
       });
       setPreview(null);
     } catch (err) {
-      alert("Error: " + (err.response?.data?.message || err.message));
+      if (err.response?.status === 429) {
+        const remainingTime = err.response?.data?.remainingTime || err.response?.data?.retryAfter;
+        const message = remainingTime 
+          ? `Rate limit exceeded. Please try again in ${remainingTime} seconds.`
+          : "Rate limit exceeded. Too many complaints. Please try again later.";
+        alert(message);
+      } else {
+        alert("Error: " + (err.response?.data?.message || err.message));
+      }
     }
   };
 

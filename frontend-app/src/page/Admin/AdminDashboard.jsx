@@ -69,6 +69,7 @@ const AdminDashboard = () => {
         setStaffList2(processed);
 
         const adminStats = await axiosInstance.get("/api/users/admin/stats");
+        console.log("REDIS CHECK → Admin Stats Response:", res.data);
         setStats(adminStats.data || []);
         console.log('yes')
         setLoading(false);
@@ -445,15 +446,17 @@ const AdminDashboard = () => {
                     <div key={star} className="text-center">
                       <span className="text-xs">{star}★</span>
                       <div className="w-12 h-2 bg-white/20 rounded mt-1">
-                        <div
-                          style={{
-                            width:
-                              (staff.distribution[star] /
-                                staff.totalRatings) *
-                              100 + "%",
-                          }}
-                          className="h-full bg-yellow-400 rounded"
-                        />
+                        {staff.totalRatings > 0 && (
+                          <div
+                            style={{
+                              width:
+                                (staff.distribution[star] /
+                                  staff.totalRatings) *
+                                100 + "%",
+                            }}
+                            className="h-full bg-yellow-400 rounded"
+                          />
+                        )}
                       </div>
                     </div>
                   ))}
