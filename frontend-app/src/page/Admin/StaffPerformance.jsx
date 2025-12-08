@@ -122,7 +122,46 @@ const StaffPerformance = () => {
       </aside>
 
       {/* MAIN CONTENT */}
+
       <main className="flex-1 p-10 z-10 mt-12">
+
+
+        {/* ------------------ TOP ENGINEERS LEADERBOARD ------------------ */}
+<div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 mb-8">
+  <h2 className="text-xl font-orbitron text-yellow-400 mb-4">Top Engineers</h2>
+
+  {staffList.length === 0 ? (
+    <p className="text-white/70">No staff ratings available</p>
+  ) : (
+    <div className="space-y-3">
+      {staffList
+        .filter(s => s.totalRatings > 0)
+        .sort((a, b) => b.averageRating - a.averageRating)
+        .slice(0, 5)       // 🔥 Only Top 5
+        .map((staff, index) => (
+          <div 
+            key={staff._id}
+            className="flex justify-between items-center bg-white/5 rounded-lg px-4 py-3 border border-white/10"
+          >
+            <div className="flex items-center gap-4">
+              <span className="text-yellow-400 text-xl font-bold">#{index + 1}</span>
+              <span className="text-white text-lg">{staff.username}</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-yellow-400 font-bold text-lg">
+                {staff.averageRating.toFixed(1)}★
+              </span>
+              <span className="text-white/60 text-sm">
+                ({staff.totalRatings} ratings)
+              </span>
+            </div>
+          </div>
+        ))}
+    </div>
+  )}
+</div>
+
 
         {/* PAGE HEADER */}
         <div className="mb-8">
