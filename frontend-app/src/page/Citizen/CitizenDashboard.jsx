@@ -41,13 +41,10 @@ export default function CitizenDashboard() {
   return (
     <div className="flex min-h-screen text-white font-inter relative overflow-hidden">
 
-      {/* ⚡ UPGRADED NEON EMERALD BACKGROUND */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#00160D] via-[#003A20] to-[#001008]" />
 
-      {/* GRID OVERLAY */}
       <div className="absolute inset-0 opacity-[0.10] bg-[url('./assets/grid.webp')] bg-cover pointer-events-none"></div>
 
-      {/* Soft Neon Glow — Mint + Lime */}
       <div className="absolute w-[380px] h-[380px] bg-[#3CFF8F] blur-[110px] opacity-15 top-[-140px] left-[-120px]" />
       <div className="absolute w-[320px] h-[320px] bg-[#B4FF5A] blur-[110px] opacity-10 bottom-[-100px] right-[-100px]" />
 
@@ -92,7 +89,6 @@ export default function CitizenDashboard() {
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
       <main className="flex-1 p-10 z-20">
 
         {/* Submit Complaint Panel */}
@@ -103,7 +99,6 @@ export default function CitizenDashboard() {
           </div>
         )}
 
-        {/* Complaint History Panel */}
         {activeMenu === "lifecycle" && (
           <div
   className="

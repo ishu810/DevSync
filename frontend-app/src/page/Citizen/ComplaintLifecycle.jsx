@@ -38,14 +38,13 @@ export default function ComplaintLifecycle() {
       const data = Array.isArray(res.data) ? res.data : [];
       setComplaints(data);
 
-      // SLA timers
+      // SLA timer
       const initialTimes = {};
       data.forEach((c) => {
         initialTimes[c._id] = calculateTimeLeft(c.deadline);
       });
       setTimeLefts(initialTimes);
 
-      // derive backend-based ratings (if available), merge with localStorage
       const backendRatings = {};
       data.forEach((c) => {
         const myRatingObj = c.assigned_to?.ratings?.find(
@@ -68,7 +67,7 @@ export default function ComplaintLifecycle() {
       setRatings(merged);
       try {
         localStorage.setItem("complaintRatings", JSON.stringify(merged));
-      } catch { /* ignore */ }
+      } catch {  }
 
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch complaints");
@@ -132,7 +131,7 @@ export default function ComplaintLifecycle() {
         { headers: { "x-auth-token": token } }
       );
       alert("Rating submitted successfully!");
-      await fetchComplaints(); // refresh complaints + ratings from backend
+      await fetchComplaints(); 
     } catch (err) {
       console.error("Error submitting rating:", err);
       alert(err.response?.data?.message || "Failed to submit rating");

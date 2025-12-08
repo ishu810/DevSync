@@ -4,6 +4,7 @@ import cors from 'cors';
 import connectDB from './src/Configs/db.js';
 import { protect, authorizeRoles } from './src/middlewares/auth.js';
 import User from './src/models/User.js';
+import "./src/queues/worker.js";
 
 
 connectDB();
@@ -72,9 +73,9 @@ app.post('/api/users/:id/rate', protect, async (req, res) => {
   }
 });
 
+import testQueueRoutes from "./src/routes/testQueueRoutes.js";
+app.use("/api/test", testQueueRoutes);
 // export default router;
-
-
 // app.use('/api/hi',(req,res)=>{
 //   res.send('hi')
 // })

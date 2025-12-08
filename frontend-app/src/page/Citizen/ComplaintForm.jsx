@@ -37,7 +37,7 @@ const ComplaintForm = () => {
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     setFormData({ ...formData, photo: file });
-    setPreview(URL.createObjectURL(file));// creates a url for the image uploaded
+    setPreview(URL.createObjectURL(file));
   };
 
   const refreshLocation = () => {
@@ -99,7 +99,6 @@ const ComplaintForm = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* Title */}
           <div>
             <label className="text-green-900 font-medium">Title</label>
             <input
@@ -115,7 +114,6 @@ const ComplaintForm = () => {
             />
           </div>
 
-          {/* Description */}
           <div>
             <label className="text-green-900 font-medium">Description</label>
             <textarea
@@ -131,7 +129,6 @@ const ComplaintForm = () => {
             />
           </div>
 
-          {/* Category */}
           <div>
             <label className="text-green-900 font-medium">Category</label>
             <select
@@ -149,7 +146,6 @@ const ComplaintForm = () => {
             </select>
           </div>
 
-          {/* Priority */}
           <div>
             <label className="text-green-900 font-medium">Priority</label>
             <select
@@ -165,7 +161,7 @@ const ComplaintForm = () => {
             </select>
           </div>
 
-          {/* Address */}
+          {/*******************/}
           <div>
             <label className="text-green-900 font-medium">Address (optional)</label>
             <input
@@ -179,7 +175,7 @@ const ComplaintForm = () => {
             />
           </div>
 
-          {/* Photo */}
+          {/* ************** */}
           <div>
             <label className="text-green-900 font-medium">Photo (optional)</label>
             <input
@@ -197,14 +193,14 @@ const ComplaintForm = () => {
             )}
           </div>
 
-          {/* Location */}
+          {/* *************/}
           {formData.latitude && (
             <p className="text-green-900">
               Location: {formData.latitude.toFixed(5)}, {formData.longitude.toFixed(5)}
             </p>
           )}
 
-          {/* Refresh Button */}
+          {/* *********** */}
           <button
             type="button"
             onClick={refreshLocation}
@@ -214,7 +210,7 @@ const ComplaintForm = () => {
             Confirm / Update Location
           </button>
 
-          {/* Submit Button */}
+          {/* ************ */}
           <button
             type="submit"
             className="w-full bg-green-800 text-white py-3 rounded-lg 
