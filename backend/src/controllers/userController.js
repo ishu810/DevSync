@@ -5,9 +5,23 @@ import bcrypt from "bcryptjs";
 
 export const getAllStaff = async (req, res) => {
   try {
-    const staff = await User.find({ role: "staff" })
+    const tenantId = req.user.tenantId;
+
+    // Redis cache key (per tenant)
+    const cacheKey = `staff_ratings_${tenantId}`;
+
+    // 🔹 1. Check Redis cache
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      console.log("📌 Staff ratings served from Redis");
+      return res.status(200).json(JSON.parse(cached));
+    }
+
+    // 🔹 2. Fetch from MongoDB
+    const staff = await User.find({ role: "staff", tenantId })
       .select("_id username email ratings");
 
+    // 🔹 3. Convert ratings into stats
     const staffWithStats = staff.map((member) => {
       const ratings = member.ratings || [];
       const totalRatings = ratings.length;
@@ -17,15 +31,8 @@ export const getAllStaff = async (req, res) => {
           ? ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings
           : 0;
 
-      // Create star distribution (1–5 stars)
-      const distribution = {
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-      };
-
+      // Star distribution
+      const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
       ratings.forEach((r) => {
         distribution[r.rating] += 1;
       });
@@ -37,16 +44,22 @@ export const getAllStaff = async (req, res) => {
         ratings,
         totalRatings,
         averageRating: Number(averageRating.toFixed(2)),
-        distribution, // ⭐ used for admin detailed rating bars
+        distribution
       };
     });
 
+    // 🔹 4. Cache for 10 minutes (600 seconds)
+    await redisClient.setEx(cacheKey, 600, JSON.stringify(staffWithStats));
+    console.log("💾 Staff ratings cached in Redis");
+
     res.status(200).json(staffWithStats);
+
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error in getAllStaff:", err);
     res.status(500).json({ message: "Server error fetching staff" });
   }
 };
+
 export const getStats=async (req,res)=>{
   console.log("stats")
   try{
