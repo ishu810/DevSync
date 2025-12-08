@@ -145,12 +145,13 @@ console.log('yes')
   >
     Create User
   </button>
-  <button 
+    <button 
   onClick={() => navigate("/dashboard/admin/staff-performance")}
   className="w-full bg-white/10 hover:bg-white/20 transition rounded-lg px-4 py-2 text-left"
 >
   Staff
 </button>
+
 </div>
 
       </aside>
