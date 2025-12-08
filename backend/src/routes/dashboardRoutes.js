@@ -22,19 +22,21 @@ router.get("/citizen", protect, authorizeRoles("citizen"), async (req, res) => {
 
 
 router.get("/staff", protect, authorizeRoles("staff", "admin"), (req, res) => {
+  const username = req.user?.username || "Staff";
   res.json({
     success: true,
     role: "staff",
-    msg: `Welcome staff ${req.user.username}`,
+    msg: `Welcome staff ${username}`,
   });
 });
 console.log('dashboard routesss')
 
 router.get("/admin", protect, authorizeRoles("admin"), (req, res) => {
+  const username = req.user?.username || "Admin";
   res.json({
     success: true,
     role: "admin",
-    msg: `Welcome admin ${req.user.username}`,
+    msg: `Welcome admin ${username}`,
   });
 });
 

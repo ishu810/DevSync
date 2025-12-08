@@ -23,7 +23,7 @@ const upload = multer({ storage });
 router.post(
   '/',
   protect,
-  rateLimiter("submit_complaint", 10, 60),  // 10 complaints per minute
+  rateLimiter("submit_complaint", 3, 60),  // 10 complaints per minute
   upload.single('photo'),
   submitComplaint
 );

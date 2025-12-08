@@ -4,6 +4,7 @@ import cors from 'cors';
 import connectDB from './src/Configs/db.js';
 import { protect, authorizeRoles } from './src/middlewares/auth.js';
 import User from './src/models/User.js';
+import "./src/queues/worker.js";
 
 
 connectDB();
@@ -12,7 +13,7 @@ import authRoutes from './src/routes/authRouts.js';
 import complaintRoutes from './src/routes/complaintRoutes.js';
 import dashboardRoutes from "./src/routes/dashboardRoutes.js";
 import userRoutes from './src/routes/userRoutes.js';
-import {saveNotificationToken} from "./src/firebase/FirebaseAdmin.js"
+import {saveNotificationToken} from "./src/firebase/SaveNotification.js"
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -35,7 +36,6 @@ app.get('/', (req, res) => {
   res.send('Server is working');
 });
 
-// Mount routes ONLY ONCE
 app.use('/api/auth', authRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use("/api/dashboard", dashboardRoutes);
@@ -46,7 +46,7 @@ app.post("/api/v1/save-token",saveNotificationToken)
 // })
 app.post('/api/users/:id/rate', protect, async (req, res) => {
   const staffId = req.params.id;
-  const raterId = req.user._id;  // assuming auth middleware sets req.user
+  const raterId = req.user._id; 
   const { rating } = req.body;
   console.log(rating);
   console.log("staffid",staffId)
@@ -73,9 +73,9 @@ app.post('/api/users/:id/rate', protect, async (req, res) => {
   }
 });
 
+import testQueueRoutes from "./src/routes/testQueueRoutes.js";
+app.use("/api/test", testQueueRoutes);
 // export default router;
-
-
 // app.use('/api/hi',(req,res)=>{
 //   res.send('hi')
 // })

@@ -12,6 +12,11 @@ const storage = new CloudinaryStorage({
   params: {
     folder: "complaints",
     allowed_formats: ["jpg", "png", "jpeg"],
+    transformation: [
+      { width: 600, height: 600, crop: "fill" }, // Square 600x600
+      { quality: "auto:good" }, // Auto optimize quality
+      { fetch_format: "auto" } // Auto choose best format (webp, etc)
+    ]
   },
 });
 

@@ -6,3 +6,9 @@ export const taskQueue = new Queue("task-queue", {
     port: 6379,
   },
 });
+console.log("QUEUE CONNECTED:"
+//   , {
+//   host: REDIS_HOST,
+//   port: REDIS_PORT,
+// }
+);

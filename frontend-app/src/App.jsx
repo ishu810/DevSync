@@ -18,7 +18,7 @@ import ComplaintForm from "./page/Citizen/ComplaintForm.jsx";
 import AdminDashboard from "./page/Admin/AdminDashboard.jsx";
 import StaffDashboard from "./page/Staff/StaffDashboard.jsx";
 import CitizenDashboard from "./page/Citizen/CitizenDashboard.jsx";
-import StaffPerformance from "./page/Admin/StaffPerformance.jsx";
+// import StaffPerformance from "./page/Admin/StaffPerformance.jsx";
 import ProtectedRoute from "./routes/protectedRoute.jsx";
 
 
@@ -37,8 +37,9 @@ function NotificationHandler() {
   // const { role, token } = useContext(UserContext);
 
   useEffect(() => {
-    if (user && user.id) { // Only request permission if user is logged in
-      requestPermission(user.id); // Call your existing function
+    if (user && user.id) { 
+      // Only request permission if user is logged in
+      requestPermission(user.id);
     } else {
       console.log("User not logged in, skipping notification permission request.");
     }
@@ -87,7 +88,6 @@ const COLORS = {
   silver: "#D9D9D9",
 };
 
-// 🔹 Auth Buttons Component
 export function AuthButtons() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -158,7 +158,6 @@ export function AuthButtons() {
   );
 }
 
-// ⭐ NAVBAR COMPONENT (FIXED + TRANSPARENT + NEON)
 function Navbar() {
   return (
     <nav
@@ -181,7 +180,6 @@ function Navbar() {
       }}
     >
 
-      {/* 🔹 Centered LOGO */}
       <div
         style={{
           position: "absolute",
@@ -207,12 +205,10 @@ function Navbar() {
   );
 }
 
-// ⭐ MAIN APP
 export default function App() {
   return (
     <Router>
          <AuthProvider>
-      {/* Navbar outside pages, fixed at top */}
       <Navbar />
       <NotificationHandler/>
        {/* <Messaging/> */}
@@ -251,7 +247,6 @@ export default function App() {
           path="/dashboard/admin/staff-performance"
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
-              <StaffPerformance />
             </ProtectedRoute>
           }
         />

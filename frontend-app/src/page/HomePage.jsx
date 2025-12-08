@@ -11,7 +11,6 @@ export default function HomePage() {
       
       <div className="overlay"></div>
 
-      {/* Main content */}
       <div className="content">
         <h2 className="title">Welcome to Fault Analyzer</h2>
      

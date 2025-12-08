@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import Tenant from '../models/Tenant.js';
 
 const isEmail = (input) =>
-  /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,})+$/.test(input);
+  /^\w+([.-]?\w+)@\w+([.-]?\w+)(\.\w{2,})+$/.test(input);
 
 //  Register a new user
 export const registerUser = async (req, res) => {
@@ -33,11 +33,9 @@ export const registerUser = async (req, res) => {
         .json({ msg: 'Admin already exists with that email or username.' });
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new user
     const user = new User({
       username,
       email,
@@ -49,7 +47,6 @@ export const registerUser = async (req, res) => {
     await user.save();
     console.log("saved")
 
-    // Create JWT
     const payload = {
        user: { id: user._id, role: user.role, username: user.username,  tenantId: user.tenantId },
      };
@@ -76,8 +73,9 @@ export const registerUser = async (req, res) => {
 
 // login logic
 export const loginUser = async (req, res) => {
+  console.log("user login controller")
   const { identifier, password } = req.body;
-
+  console.log("hii")
   if (!identifier || !password ) {
     return res.status(400).json({
       msg: "Email/Username, password and tenant code are required",
@@ -85,15 +83,16 @@ export const loginUser = async (req, res) => {
   }
 
   try {
-
+    console.log(identifier)
     const query = isEmail(identifier)
       ? { email: identifier.trim().toLowerCase() }
       : { username: identifier.trim() };
-
+     console.log(query)
     const user = await User.findOne({
       ...query,
       
     });
+     console.log(user)
 
     if (!user) {
       return res.status(400).json({ msg: "Invalid Credentials" });
@@ -123,5 +122,4 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ msg: "Server Error" });
   }
 };
-
 

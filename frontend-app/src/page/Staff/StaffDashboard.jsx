@@ -65,21 +65,19 @@ export default function StaffDashboard() {
   const handleStatusChange = async (complaintId, newStatus) => {
     try {
       setUpdating(complaintId);
-      await axiosInstance.patch("/api/complaints/status", {
+      const response = await axiosInstance.patch("/api/complaints/status", {
         complaintId,
         status: newStatus,
       });
-      setComplaints((prev) =>
-        prev.map((c) =>
-          c._id === complaintId ? { ...c, status: newStatus } : c
-        )
-      ); 
-      await fetchComplaints();
-
+      
+      if (response.data.success) {
+        await fetchComplaints();
+      } else {
+        alert(response.data.message || "Failed to update status.");
+      }
       setUpdating(null);
     } catch (err) {
       console.error("Error updating status:", err);
-      alert("Failed to update status.");
       setUpdating(null);
     }
   };
@@ -266,7 +264,10 @@ useEffect(() => {
                 <img
                   src={c.photo_url}
                   alt="Complaint"
-                  className="rounded-lg mt-3 border border-[#39FF14]"
+                  className="rounded-lg mt-3 border border-[#39FF14] object-cover aspect-square max-w-xs mx-auto"
+                  loading="lazy"
+                  onClick={() => window.open(c.photo_url, '_blank')}
+                  style={{ cursor: 'pointer' }}
                 />
               )}
 
