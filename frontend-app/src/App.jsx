@@ -18,7 +18,7 @@ import ComplaintForm from "./page/Citizen/ComplaintForm.jsx";
 import AdminDashboard from "./page/Admin/AdminDashboard.jsx";
 import StaffDashboard from "./page/Staff/StaffDashboard.jsx";
 import CitizenDashboard from "./page/Citizen/CitizenDashboard.jsx";
-import StaffPerformance from "./page/Admin/StaffPerformance.jsx";
+// import StaffPerformance from "./page/Admin/StaffPerformance.jsx";
 import ProtectedRoute from "./routes/protectedRoute.jsx";
 
 
@@ -251,7 +251,7 @@ export default function App() {
           path="/dashboard/admin/staff-performance"
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
-              <StaffPerformance />
+              {/* <StaffPerformance /> */}
             </ProtectedRoute>
           }
         />

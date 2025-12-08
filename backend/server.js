@@ -12,7 +12,7 @@ import authRoutes from './src/routes/authRouts.js';
 import complaintRoutes from './src/routes/complaintRoutes.js';
 import dashboardRoutes from "./src/routes/dashboardRoutes.js";
 import userRoutes from './src/routes/userRoutes.js';
-import {saveNotificationToken} from "./src/firebase/FirebaseAdmin.js"
+import {saveNotificationToken} from "./src/firebase/SaveNotification.js"
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
