@@ -4,10 +4,9 @@ import { getAdminStats } from "../controllers/userController.js";
 import { getStaffStats } from "../controllers/userController.js";
 
 const router = express.Router();
-console.log("🚀 Dashboard routes loaded");
+console.log("Dashboard routes loaded");
 
 
-// Citizen dashboard
 import User from "../models/User.js";
 
 router.get("/citizen", protect, authorizeRoles("citizen"), async (req, res) => {
@@ -22,7 +21,6 @@ router.get("/citizen", protect, authorizeRoles("citizen"), async (req, res) => {
 });
 
 
-// Staff dashboard
 router.get("/staff", protect, authorizeRoles("staff", "admin"), (req, res) => {
   res.json({
     success: true,
@@ -31,7 +29,6 @@ router.get("/staff", protect, authorizeRoles("staff", "admin"), (req, res) => {
   });
 });
 console.log('dashboard routesss')
-// Admin dashboard
 
 router.get("/admin", protect, authorizeRoles("admin"), (req, res) => {
   res.json({

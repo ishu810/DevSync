@@ -1,22 +1,55 @@
+// src/page/Citizen/ComplaintLifecycle.jsx
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import axiosInstance from "../../api/axiosInstance";
+import { Rating } from "@smastrom/react-rating";
+import "@smastrom/react-rating/style.css";
 
 export default function ComplaintLifecycle() {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
   const [editComplaint, setEditComplaint] = useState(null);
   const [editImagePreview, setEditImagePreview] = useState(null);
-const [editImageFile, setEditImageFile] = useState(null);
+  const [editImageFile, setEditImageFile] = useState(null);
 
+  const [timeLefts, setTimeLefts] = useState({});
+  const [ratings, setRatings] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("complaintRatings")) || {};
+    } catch {
+      return {};
+    }
+  });
+
+  /* ---------------- FETCH COMPLAINTS ---------------- */
 
   const fetchComplaints = async () => {
     setLoading(true);
     setError("");
 
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("You must be logged in to view complaints.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await axiosInstance.get("/api/complaints");
-      setComplaints(Array.isArray(res.data) ? res.data : []);
+      const res = await axios.get("http://localhost:5000/api/complaints", {
+        headers: { "x-auth-token": token },
+      });
+
+      const data = Array.isArray(res.data) ? res.data : [];
+      setComplaints(data);
+
+      // SLA timers
+      const timers = {};
+      data.forEach((c) => {
+        timers[c._id] = calculateTimeLeft(c.deadline);
+      });
+      setTimeLefts(timers);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch complaints");
     } finally {
@@ -24,198 +57,176 @@ const [editImageFile, setEditImageFile] = useState(null);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this complaint?")) return;
-
-    await axiosInstance.delete(`/api/complaints/${id}`);
-    setComplaints((prev) => prev.filter((c) => c._id !== id));
-  };
-
- const saveEdit = async () => {
-  const formData = new FormData();
-
-  formData.append("title", editComplaint.title);
-  formData.append("description", editComplaint.description);
-  formData.append("category", editComplaint.category);
-  formData.append("priority", editComplaint.priority);
-
-  if (editImageFile) {
-    formData.append("photo", editImageFile);
-  }
-
-  const res = await axiosInstance.patch(
-    `/api/complaints/${editComplaint._id}`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-
-  setComplaints((prev) =>
-    prev.map((c) =>
-      c._id === res.data.complaint._id ? res.data.complaint : c
-    )
-  );
-
-  setEditComplaint(null);
-  setEditImageFile(null);
-  setEditImagePreview(null);
-};
-
-
   useEffect(() => {
     fetchComplaints();
   }, []);
 
-  if (loading) return <p className="text-[#B4FF5A]">Loading complaints...</p>;
+  /* ---------------- SLA COUNTDOWN ---------------- */
 
-  if (error) return <p className="text-red-400">{error}</p>;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const updated = {};
+      complaints.forEach((c) => {
+        updated[c._id] = calculateTimeLeft(c.deadline);
+      });
+      setTimeLefts(updated);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [complaints]);
+
+  /* ---------------- CRUD ---------------- */
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this complaint?")) return;
+    await axiosInstance.delete(`/api/complaints/${id}`);
+    setComplaints((prev) => prev.filter((c) => c._id !== id));
+  };
+
+  const saveEdit = async () => {
+    const formData = new FormData();
+    formData.append("title", editComplaint.title);
+    formData.append("description", editComplaint.description);
+    formData.append("category", editComplaint.category);
+    formData.append("priority", editComplaint.priority);
+
+    if (editImageFile) {
+      formData.append("photo", editImageFile);
+    }
+
+    const res = await axiosInstance.patch(
+      `/api/complaints/${editComplaint._id}`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+
+    setComplaints((prev) =>
+      prev.map((c) => (c._id === res.data.complaint._id ? res.data.complaint : c))
+    );
+
+    setEditComplaint(null);
+    setEditImageFile(null);
+    setEditImagePreview(null);
+  };
+
+  /* ---------------- RATINGS ---------------- */
+
+  const submitRating = async (complaintId, rating) => {
+    const token = localStorage.getItem("token");
+    const complaint = complaints.find((c) => c._id === complaintId);
+
+    if (!token || !complaint?.assigned_to?._id) return;
+
+    await axios.post(
+      `http://localhost:5000/api/users/${complaint.assigned_to._id}/rate`,
+      { rating },
+      { headers: { "x-auth-token": token } }
+    );
+
+    setRatings((prev) => ({ ...prev, [complaintId]: rating }));
+  };
+
+  /* ---------------- LOADING / ERROR ---------------- */
+
+  if (loading)
+    return <p className="text-[#B4FF5A]">Loading complaints...</p>;
+
+  if (error)
+    return (
+      <div className="text-[#B4FF5A]">
+        <p>{error}</p>
+        <button onClick={fetchComplaints}>Retry</button>
+      </div>
+    );
+
+  /* ---------------- UI ---------------- */
 
   return (
     <>
-      {/* COMPLAINT LIST */}
       <div className="space-y-5 mt-4">
-        {complaints.length === 0 ? (
-          <p className="text-[#B4FF5A]">No complaints submitted yet.</p>
-        ) : (
-          complaints.map((c) => (
-            <div
-              key={c._id}
-              className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-[#3CFF8F]/40"
-            >
+        {complaints.map((c) => {
+          const timeLeft = timeLefts[c._id];
+
+          return (
+            <div key={c._id} className="bg-white/10 p-6 rounded-xl">
               <h3 className="text-xl font-bold">{c.title}</h3>
-              <p className="text-gray-200 mb-2">{c.description}</p>
-              <p className="text-sm text-[#B4FF5A]">
-                Status: {c.status}
-              </p>
+              <p>{c.description}</p>
+
+              <p>Status: {c.status}</p>
+
+              {timeLeft && (
+                <p className={timeLeft.total <= 0 ? "text-red-500" : "text-yellow-400"}>
+                  {timeLeft.total > 0
+                    ? `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s`
+                    : "Deadline passed"}
+                </p>
+              )}
 
               {c.status === "OPEN" && (
                 <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={() => setEditComplaint(c)}
-                    className="px-3 py-1 bg-blue-500 rounded text-sm"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(c._id)}
-                    className="px-3 py-1 bg-red-500 rounded text-sm"
-                  >
-                    Delete
-                  </button>
+                  <button onClick={() => setEditComplaint(c)}>Edit</button>
+                  <button onClick={() => handleDelete(c._id)}>Delete</button>
                 </div>
               )}
+
+              <Rating
+                style={{ maxWidth: 120 }}
+                value={ratings[c._id] || 0}
+                onChange={(r) => submitRating(c._id, r)}
+              />
             </div>
-          ))
-        )}
+          );
+        })}
       </div>
 
       {/* EDIT MODAL */}
       {editComplaint && (
-  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-    <div className="bg-[#00160D] p-6 rounded-xl w-[450px] border border-[#3CFF8F]/40">
-      <h2 className="text-xl font-orbitron text-[#3CFF8F] mb-4">
-        Edit Complaint
-      </h2>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
+          <div className="bg-[#00160D] p-6 rounded-xl w-[450px]">
+            <input
+              value={editComplaint.title}
+              onChange={(e) =>
+                setEditComplaint({ ...editComplaint, title: e.target.value })
+              }
+            />
 
-      {/* Title */}
-      <input
-        className="w-full p-2 mb-3 bg-black/40 rounded text-white"
-        value={editComplaint.title}
-        onChange={(e) =>
-          setEditComplaint({ ...editComplaint, title: e.target.value })
-        }
-      />
+            <textarea
+              value={editComplaint.description}
+              onChange={(e) =>
+                setEditComplaint({ ...editComplaint, description: e.target.value })
+              }
+            />
 
-      {/* Description */}
-      <textarea
-        className="w-full p-2 mb-3 bg-black/40 rounded text-white"
-        rows={4}
-        value={editComplaint.description}
-        onChange={(e) =>
-          setEditComplaint({
-            ...editComplaint,
-            description: e.target.value,
-          })
-        }
-      />
+            <input
+              type="file"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                setEditImageFile(file);
+                setEditImagePreview(URL.createObjectURL(file));
+              }}
+            />
 
-      {/* Category */}
-      <select
-        className="w-full p-2 mb-3 bg-black/40 rounded text-white"
-        value={editComplaint.category}
-        onChange={(e) =>
-          setEditComplaint({ ...editComplaint, category: e.target.value })
-        }
-      >
-        <option>Infrastructure</option>
-        <option>Sanitation</option>
-        <option>Water</option>
-        <option>Electricity</option>
-        <option>Other</option>
-      </select>
-
-      {/* Priority */}
-      <select
-        className="w-full p-2 mb-3 bg-black/40 rounded text-white"
-        value={editComplaint.priority}
-        onChange={(e) =>
-          setEditComplaint({ ...editComplaint, priority: e.target.value })
-        }
-      >
-        <option>Low</option>
-        <option>Medium</option>
-        <option>High</option>
-      </select>
-
-      {/* Photo upload */}
-      <input
-        type="file"
-        accept="image/*"
-        className="mb-3 text-white"
-        onChange={(e) => {
-          const file = e.target.files[0];
-          if (!file) return;
-
-          setEditImageFile(file);
-          setEditImagePreview(URL.createObjectURL(file));
-        }}
-      />
-
-      {/* Preview */}
-      {(editImagePreview || editComplaint.photo_url) && (
-        <img
-          src={editImagePreview || editComplaint.photo_url}
-          alt="Preview"
-          className="rounded-lg mb-3"
-        />
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setEditComplaint(null)}>Cancel</button>
+              <button onClick={saveEdit}>Save</button>
+            </div>
+          </div>
+        </div>
       )}
-
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={() => {
-            setEditComplaint(null);
-            setEditImageFile(null);
-            setEditImagePreview(null);
-          }}
-          className="px-4 py-2 bg-gray-600 rounded"
-        >
-          Cancel
-        </button>
-
-        <button
-          onClick={saveEdit}
-          className="px-4 py-2 bg-[#3CFF8F] text-black rounded"
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
     </>
   );
+}
+
+/* ---------------- UTIL ---------------- */
+
+function calculateTimeLeft(deadline) {
+  if (!deadline) return { total: 0 };
+  const diff = new Date(deadline) - Date.now();
+  return {
+    total: diff,
+    days: Math.floor(diff / 86400000),
+    hours: Math.floor((diff / 3600000) % 24),
+    minutes: Math.floor((diff / 60000) % 60),
+    seconds: Math.floor((diff / 1000) % 60),
+  };
 }

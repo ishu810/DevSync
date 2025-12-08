@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +11,7 @@ const AdminDashboard = () => {
   const [complaints, setComplaints] = useState([]);
   const [staffList, setStaffList] = useState([]);
   const [assignData, setAssignData] = useState({ complaintId: "", staffId: "" });
+  const [timeLefts, setTimeLefts] = useState({}); 
   const [stats, setStats] = useState(null);
   const [activeView, setActiveView] = useState("dashboard");
   const [selectedComplaints, setSelectedComplaints] = useState([])
@@ -35,8 +37,16 @@ const AdminDashboard = () => {
         setUsername(dashboardRes.data.msg.replace("Welcome admin ", ""));
 
         const complaintRes = await axiosInstance.get("/api/complaints");
-        setComplaints(Array.isArray(complaintRes.data) ? complaintRes.data : []);
-        
+        const fetchedComplaints = Array.isArray(complaintRes.data) ? complaintRes.data : [];
+        setComplaints(fetchedComplaints);
+
+        // Initialize SLA timers
+        const initialTimes = {};
+        fetchedComplaints.forEach((c) => {
+          initialTimes[c._id] = calculateTimeLeft(c.deadline);
+        });
+        setTimeLefts(initialTimes);
+
         const staffRes = await axiosInstance.get("/api/users/staff");
         setStaffList(staffRes.data || []);
          console.log("reached")
@@ -54,12 +64,28 @@ console.log('yes')
     fetchData();
   }, [navigate]);
 
+  // Update SLA timers every second
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const newTimes = {};
+      complaints.forEach((c) => {
+        newTimes[c._id] = calculateTimeLeft(c.deadline);
+      });
+      setTimeLefts(newTimes);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [complaints]);
+
   const handleAssign = async () => {
     if (!assignData.complaintId || !assignData.staffId)
       return alert("Select complaint & staff");
 
     try {
+
       const res = await axiosInstance.patch("/api/complaints/assign", assignData);
+    console.log("in handle assign function");
+
       alert(res.data.message);
       
       setComplaints((prev) =>
@@ -271,28 +297,44 @@ console.log('yes')
                   <th className="p-3 font-semibold">Status</th>
                   <th className="p-3 font-semibold">Assigned To</th>
                   <th className="p-3 font-semibold">Category</th>
+                  <th className="p-3 font-semibold">Deadline</th>
                 </tr>
               </thead>
 
               <tbody>
                 {complaints.map((c) => (
                   <tr
-                      key={c._id}
-                      className="bg-white/10 border-b border-white/20 hover:bg-white/20 transition"
-                    >
-                      <td className="p-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedComplaints.includes(c._id)}
-                          onChange={() => toggleComplaint(c._id)}
-                        />
-                      </td>
+  key={c._id}
+  className="bg-white/10 border-b border-white/20 hover:bg-white/20 transition"
+>
+  {/* ✅ Checkbox for bulk actions */}
+  <td className="p-3">
+    <input
+      type="checkbox"
+      checked={selectedComplaints.includes(c._id)}
+      onChange={() => toggleComplaint(c._id)}
+    />
+  </td>
 
-                      <td className="p-3">{c.title}</td>
-                      <td className="p-3">{c.status}</td>
-                      <td className="p-3">{c.assigned_to?.username || "Unassigned"}</td>
-                      <td className="p-3">{c.category}</td>
-                    </tr>
+  {/* ✅ Complaint data */}
+  <td className="p-3">{c.title}</td>
+  <td className="p-3">{c.status}</td>
+  <td className="p-3">{c.assigned_to?.username || "Unassigned"}</td>
+  <td className="p-3">{c.category}</td>
+
+  {/* ✅ SLA Countdown */}
+  <td
+    className="p-3 font-semibold"
+    style={{
+      color: timeLefts[c._id]?.total > 0 ? "#FFD700" : "#FF4C4C",
+    }}
+  >
+    {timeLefts[c._id]?.total > 0
+      ? `${timeLefts[c._id].days}d ${timeLefts[c._id].hours}h ${timeLefts[c._id].minutes}m ${timeLefts[c._id].seconds}s`
+      : "Deadline passed"}
+  </td>
+</tr>
+
                 ))}
               </tbody>
 
@@ -311,3 +353,20 @@ console.log('yes')
 };
 
 export default AdminDashboard;
+
+// for SLA timer
+function calculateTimeLeft(deadline) {
+  if (!deadline) return { total: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+  const now = new Date().getTime();
+  const due = new Date(deadline).getTime();
+  const diff = due - now;
+  const total = diff;
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+
+  return { total, days, hours, minutes, seconds };
+}

@@ -1,8 +1,6 @@
 import { Schema, model } from "mongoose";
 
-// =====================
 // Comment Sub-Document
-// =====================
 const CommentSchema = new Schema({
   text: {
     type: String,
@@ -20,9 +18,7 @@ const CommentSchema = new Schema({
   }
 });
 
-// =====================
 // Complaint Schema
-// =====================
 const ComplaintSchema = new Schema(
   {
     submitted_by: {
@@ -37,7 +33,6 @@ const ComplaintSchema = new Schema(
       default: null
     },
 
-    // ⭐ Comments (embedded documents)
     comments: [CommentSchema],
 
     title: {
@@ -85,13 +80,26 @@ const ComplaintSchema = new Schema(
     },
 
     location: {
-      latitude: Number,
-      longitude: Number,
-      address: {
-        type: String,
-        trim: true
-      }
+      latitude: { type: Number },
+      longitude: { type: Number },
+      address: { type: String, trim: true },
     },
+
+    deadline: {
+      type: Date,
+      default: () => {
+      const now = new Date();
+      now.setDate(now.getDate() + 2); 
+      return now;
+    },
+    },
+    lastDeadlineAlerted: {
+      type: Date,
+      default: null,
+    },
+
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now },
     tenantId: {
   type: Schema.Types.ObjectId,
   ref: "Tenant",

@@ -41,35 +41,31 @@ export const getAdminStats = async (req, res) => {
  try {
      const tenantId = req.user.tenantId;
     const filter = { tenantId };
-    // 1️⃣ Total complaints for the tenant
+    //  Total complaints for the tenant
     const total = await Complaint.countDocuments(filter);
 
-    // 2️⃣ Status counts
+    //  Status counts
     const open = await Complaint.countDocuments({...filter, status: "OPEN" });
     const inProgress = await Complaint.countDocuments({ ...filter,status: "IN_PROGRESS" });
     const closed = await Complaint.countDocuments({...filter,status: "CLOSED" });
     const resolved = await Complaint.countDocuments({...filter, status: "RESOLVED" });
 
-    // 3️⃣ SLA Violations (example : older than 3 days and not resolved)
     const slaViolations = await Complaint.countDocuments({
       ...filter,
       status: { $nin: ["RESOLVED", "CLOSED"] },
       updatedAt: { $lt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) }
     });
 
-    // 4️⃣ Complaints grouped by category (department)
     const byCategory = await Complaint.aggregate([
       {$match:filter},
       { $group: { _id: "$category", count: { $sum: 1 } } }
     ]);
 
-    // 5️⃣ Complaints per engineer
     const byEngineer = await Complaint.aggregate([
       { $match: { ...filter,assigned_to: { $ne: null } } },
       { $group: { _id: "$assigned_to", count: { $sum: 1 } } }
     ]);
 
-    // 6️⃣ Trend (last 7 days)
     const dailyTrend = await Complaint.aggregate([
        {$match:filter},
       {
@@ -155,6 +151,20 @@ export const getStaffStats = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Error fetching staff stats" });
+  }
+};
+
+export const getUserById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).select("fcmToken"); // Only select fcmToken
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("Error fetching user by ID:", error);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
 
@@ -271,4 +281,19 @@ export const bulkCreateUsers = async (req, res) => {
       }
     });
 };
+export const saveFcmToken = async (req, res) => {
+  try {
+    const { fcmToken } = req.body;
+    if (!fcmToken) return res.status(400).json({ message: "Token missing" });
 
+    await User.findByIdAndUpdate(req.user.id, {
+      fcmToken,
+      tokenUpdatedAt: new Date(),
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Save token error", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

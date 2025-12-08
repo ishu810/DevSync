@@ -1,4 +1,6 @@
-import React from "react";
+import '@smastrom/react-rating/style.css';
+
+import React , {useContext,useEffect}from "react";
 import logo from "./assets/logo.png"; 
 import {
   BrowserRouter as Router,
@@ -6,6 +8,7 @@ import {
   Route,
   Link,
   useNavigate,
+  useLocation,
 } from "react-router-dom";
 
 import Register from "./page/auth/Register.jsx";
@@ -16,6 +19,60 @@ import AdminDashboard from "./page/Admin/AdminDashboard.jsx";
 import StaffDashboard from "./page/Staff/StaffDashboard.jsx";
 import CitizenDashboard from "./page/Citizen/CitizenDashboard.jsx";
 import ProtectedRoute from "./routes/protectedRoute.jsx";
+
+//Notification
+import Messaging from "./Firebase/Messaging.jsx";
+import { onMessage } from "firebase/messaging";
+import { messaging } from "./Firebase/firebase";
+import { requestPermission } from "./Firebase/requestPermission";
+
+import AuthProvider from "./context/AuthContext.jsx";
+import {UserContext} from "./context/AuthContext.jsx";
+
+function NotificationHandler() {
+  const { user } = useContext(UserContext);
+  // const location = useLocation();
+  // const { role, token } = useContext(UserContext);
+
+  useEffect(() => {
+    if (user && user.id) { // Only request permission if user is logged in
+      requestPermission(user.id); // Call your existing function
+    } else {
+      console.log("User not logged in, skipping notification permission request.");
+    }
+
+
+    const unsubscribe = onMessage(messaging, (payload) => {
+      console.log("Foreground message received in App.jsx:", payload);
+      if (payload.notification) {
+        new Notification(payload.notification.title, {
+          body: payload.notification.body,
+        });
+      }
+    });
+    return () => unsubscribe(); // Cleanup
+
+  // Notification.requestPermission().then(permission => {
+  //   if (permission === "granted") {
+  //     messaging.getToken({ vapidKey: YOUR_VAPID_KEY })
+  //       .then(token => {
+  //         api.saveFcmToken(user.id, token);
+  //       })
+  //       .catch(err => console.error("Error getting FCM token:", err));
+  //   }
+  // });
+  // const unsubscribe = onMessage(messaging, payload => {
+  //   console.log("Foreground message", payload);
+  //   if (payload.notification) {
+  //     new Notification(payload.notification.title, {
+  //       body: payload.notification.body,
+  //     });
+  //   }
+  // });
+  // return unsubscribe;
+}, [user]);
+return null;
+}
 
 // POWER RANGERS COLORS
 const COLORS = {
@@ -152,9 +209,11 @@ function Navbar() {
 export default function App() {
   return (
     <Router>
+         <AuthProvider>
       {/* Navbar outside pages, fixed at top */}
       <Navbar />
-
+      <NotificationHandler/>
+       {/* <Messaging/> */}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/register" element={<Register />} />
@@ -201,6 +260,7 @@ export default function App() {
           element={<h1 style={{ color: COLORS.red }}>⚠ Page Not Found</h1>}
         />
       </Routes>
+      </AuthProvider>
     </Router>
   );
 }

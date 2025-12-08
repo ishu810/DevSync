@@ -10,7 +10,7 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || "smtp.gmail.com",
   port: process.env.EMAIL_PORT ? Number(process.env.EMAIL_PORT) : 587,
-  secure: process.env.EMAIL_SECURE === "true", // true for port 465
+  secure: process.env.EMAIL_SECURE === "true",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -24,6 +24,7 @@ transporter.verify()
 
 
 async function sendEmail(to, subject, text, html) {
+  // console.log("email send function")
   const mailOptions = {
     from: `"DevSync" <${process.env.EMAIL_USER}>`,
     to,
@@ -35,7 +36,6 @@ async function sendEmail(to, subject, text, html) {
   try {
     const info = await transporter.sendMail(mailOptions);
     console.log("email send");
-    // console.log(`Email sent to ${to}: ${info.messageId}`);
   } catch (err) {
     console.error("Error sending email:", err);
   }
@@ -44,6 +44,7 @@ async function sendEmail(to, subject, text, html) {
 
 async function sendNotification(token, title, body) {
   const message = { notification: { title, body }, token };
+ 
   try {
     await admin.messaging().send(message);
     console.log(`Notification sent to token: ${token}`);
@@ -56,7 +57,6 @@ async function sendNotification(token, title, body) {
 const sendnoti = () => {
   cron.schedule("*/15 * * * *", async () => { 
     console.log("in cron.scedule")
-    // Run every 15 minutes
     console.log("Cron triggered: Checking for reminders", new Date().toLocaleString());
 
     try {
@@ -64,8 +64,10 @@ const sendnoti = () => {
 
       // Complaint Deadline Alerts
       const impendingComplaints = await Complaint.find({
-        status: { $nin: ['RESOLVED', 'CLOSED'] }, // Not yet resolved or closed
-        deadline: { $ne: null, $lte: new Date(now.getTime() + 60 * 60 * 1000) } // Deadline is within the next hour
+        status: { $nin: ['RESOLVED', 'CLOSED'] },
+         // Not yet resolved or closed
+        deadline: { $ne: null, $lte: new Date(now.getTime() + 60 * 60 * 1000) } 
+        // Deadline is within the next hour
       }).populate('assigned_to', 'username email fcmToken');
 
       for (const complaint of impendingComplaints) {
@@ -80,12 +82,12 @@ const sendnoti = () => {
             if (complaint.lastDeadlineAlerted) {
               const lastAlert = new Date(complaint.lastDeadlineAlerted);
               if (now.getTime() - lastAlert.getTime() < 60 * 60 * 1000) { 
-                // If alerted within the last hour
+                // alerted within the last hour
                 console.log(`Already alerted for complaint ${complaint._id} within the last hour.`);
                 continue;
               }
             }
-            const title = `🚨 IMPENDING DEADLINE: Complaint #${complaint._id}`;
+            const title = `IMPENDING DEADLINE: Complaint #${complaint._id}`;
             const body = `Complaint: ${complaint.title} has a deadline in ${minutesRemaining} minutes. Status: ${complaint.status}`;
 
             if (staffUser.fcmToken) {
@@ -109,7 +111,6 @@ const sendnoti = () => {
               await sendEmail(staffUser.email, title, body, html);
             }
 
-            // Save lastDeadlineAlerted timestamp
             complaint.lastDeadlineAlerted = now;
             await complaint.save();
           }

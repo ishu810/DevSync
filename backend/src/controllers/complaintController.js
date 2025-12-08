@@ -1,10 +1,31 @@
-import Complaint from "../models/Complaint.js";
-import { sendNotification, sendEmail } from "../firebase/SendNotification.js";
-import User from "../models/User.js";
+import dotenv from "dotenv";
+dotenv.config();
+import Complaint from '../models/Complaint.js';
+import { sendNotification, sendEmail } from '../firebase/SendNotification.js';
+import User  from '../models/User.js';
 
-/* ===========================
-   SUBMIT COMPLAINT (CITIZEN)
-=========================== */
+
+export const rateStaff = async (req, res) => {
+  try {
+    const { staffId, ratingValue, raterId } = req.body; 
+    const user = await User.findById(staffId);
+    if (!user) return res.status(404).json({ message: "Staff not found" });
+
+    user.ratings.push({
+      rater: raterId,
+      rating: ratingValue,
+      date: new Date()
+    });
+
+    await user.save();
+    return res.json({ message: "Rating saved", ratings: user.ratings });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 export const submitComplaint = async (req, res) => {
   try {
     if (!req.user?.id) {
@@ -91,7 +112,7 @@ export const getComplaints = async (req, res) => {
 
     const complaints = await Complaint.find(filter)
       .populate("submitted_by", "username email")
-      .populate("assigned_to", "username email")
+      .populate("assigned_to", "username email ratings")
       .sort({ createdAt: -1 });
 
     res.status(200).json(complaints);
@@ -104,11 +125,12 @@ export const getComplaints = async (req, res) => {
   }
 };
 
-/* ===========================
-   ASSIGN COMPLAINT (ADMIN)
-=========================== */
 export const assignComplaint = async (req, res) => {
+    console.log("Hi");
+
   try {
+    const { complaintId, staffId } = req.body; // Moved to the beginning of the try block
+
     if (req.user.role !== "admin") {
       return res.status(403).json({
         success: false,
@@ -116,16 +138,13 @@ export const assignComplaint = async (req, res) => {
       });
     }
 
-    const { complaintId, staffId } = req.body;
-
-    // ✅ Ensure staff belongs to same tenant
-    const staffUser = await User.findOne({
+    const staffUserForCheck = await User.findOne({ // Renamed to avoid redeclaration
       _id: staffId,
       role: "staff",
       tenantId: req.user.tenantId,
     });
 
-    if (!staffUser) {
+    if (!staffUserForCheck) {
       return res.status(400).json({
         success: false,
         message: "Invalid staff for this tenant",
@@ -144,26 +163,45 @@ export const assignComplaint = async (req, res) => {
       },
       { new: true }
     )
-      .populate("assigned_to", "username email fcmToken")
-      .populate("submitted_by", "username email");
+      .populate('assigned_to', 'username email fcmToken')
+       // populate Token
+      .populate('submitted_by', 'username email');
 
-    if (!complaint) {
-      return res.status(404).json({
-        success: false,
-        message: "Complaint not found",
-      });
-    }
+    if (!complaint) return res.status(404).json({ success: false, message: 'Complaint not found' });
 
-    // ✅ Notifications
-    const title = `New Complaint Assigned: ${complaint.title}`;
-    const body = `Complaint ${complaint._id} assigned to you.`;
+    // Send immediate notification to assigned staff
+    if (complaint.assigned_to) {
+      // Use complaint.assigned_to directly, which is already populated
+      const title = `New Complaint Assigned: ${complaint.title}`;
+      const body = `Complaint #${complaint._id} has been assigned to you. Type: ${complaint.category}. Location: ${complaint.location?.address || 'N/A'}. Deadline: ${complaint.deadline ? new Date(complaint.deadline).toLocaleString() : 'N/A'}`;
 
-    if (staffUser.fcmToken) {
-      await sendNotification(staffUser.fcmToken, title, body);
-    }
+      if (complaint.assigned_to.fcmToken) {
+        console.log("in background messaging");
+        console.log("Private key starts with:", process.env.FIREBASE_PRIVATE_KEY.slice(0, 40));
+        console.log("Private key ends with:", process.env.FIREBASE_PRIVATE_KEY.slice(-40));
 
-    if (staffUser.email) {
-      await sendEmail(staffUser.email, title, body);
+        await sendNotification(complaint.assigned_to.fcmToken, title, body);
+        console.log("background messaging done");
+      }
+      if (complaint.assigned_to.email) {
+        const html = `
+          <div style="font-family: Arial, sans-serif; padding: 15px;">
+            <h2> New Complaint Assigned!</h2>
+            <p>Hi ${complaint.assigned_to.username || "there"},</p>
+            <p>A new complaint has been assigned to you:</p>
+            <h3>${complaint.title}</h3>
+            <p><strong>Description:</strong> ${complaint.description}</p>
+            <p><strong>Category:</strong> ${complaint.category}</p>
+            <p><strong>Location:</strong> ${complaint.location?.address || 'N/A'}</p>
+            <p><strong>Priority:</strong> ${complaint.priority}</p>
+            <p><strong>Deadline:</strong> ${complaint.deadline ? new Date(complaint.deadline).toLocaleString() : 'N/A'}</p>
+            <br/>
+            <p>Please review and take action.<br/>– DevSync Team</p>
+          </div>
+        `;
+        await sendEmail(complaint.assigned_to.email, title, body, html);
+        console.log("email sent");
+      }
     }
 
     res.status(200).json({
@@ -180,9 +218,6 @@ export const assignComplaint = async (req, res) => {
   }
 };
 
-/* ===========================
-   UPDATE COMPLAINT STATUS
-=========================== */
 export const updateComplaintStatus = async (req, res) => {
   try {
     const { complaintId, status, remarks } = req.body;
