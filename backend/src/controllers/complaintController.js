@@ -1,13 +1,15 @@
+import { taskQueue } from "../queues/queue.js";
+
 import dotenv from "dotenv";
 dotenv.config();
 import Complaint from '../models/Complaint.js';
 import { sendNotification, sendEmail } from '../firebase/SendNotification.js';
-import User  from '../models/User.js';
+import User from '../models/User.js';
 
 
 export const rateStaff = async (req, res) => {
   try {
-    const { staffId, ratingValue, raterId } = req.body; 
+    const { staffId, ratingValue, raterId } = req.body;
     const user = await User.findById(staffId);
     if (!user) return res.status(404).json({ message: "Staff not found" });
 
@@ -126,7 +128,7 @@ export const getComplaints = async (req, res) => {
 };
 
 export const assignComplaint = async (req, res) => {
-    console.log("Hi");
+  console.log("Hi");
 
   try {
     const { complaintId, staffId } = req.body; // Moved to the beginning of the try block
@@ -164,7 +166,7 @@ export const assignComplaint = async (req, res) => {
       { new: true }
     )
       .populate('assigned_to', 'username email fcmToken')
-       // populate Token
+      // populate Token
       .populate('submitted_by', 'username email');
 
     if (!complaint) return res.status(404).json({ success: false, message: 'Complaint not found' });
@@ -203,6 +205,18 @@ export const assignComplaint = async (req, res) => {
         console.log("email sent");
       }
     }
+
+    //***********88worker queue************** */
+
+    await taskQueue.add("sendNotification", {
+      userId: staffId,
+      message: "A new complaint has been assigned to you!"
+    });
+
+    // await taskQueue.add("predictPriority", {
+    //   text: complaint.description,
+    // });
+
 
     res.status(200).json({
       success: true,

@@ -19,7 +19,7 @@ export default function AppRoutes() {
     <ProtectedRoute allowedRoles={["citizen"]}>
       <CitizenDashboard />
     </ProtectedRoute>
-  } />
+  } />+
 
   <Route path="/dashboard/staff" element={
     <ProtectedRoute allowedRoles={["staff", "admin"]}>
