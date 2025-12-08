@@ -4,11 +4,46 @@ import bcrypt from "bcryptjs";
 
 export const getAllStaff = async (req, res) => {
   try {
-    const staff = await User.find({ role: 'staff',tenantId:req.user.tenantId, }).select('_id username email');
-    res.status(200).json(staff);
+    const staff = await User.find({ role: "staff" })
+      .select("_id username email ratings");
+
+    const staffWithStats = staff.map((member) => {
+      const ratings = member.ratings || [];
+      const totalRatings = ratings.length;
+
+      const averageRating =
+        totalRatings > 0
+          ? ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings
+          : 0;
+
+      // Create star distribution (1–5 stars)
+      const distribution = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+      };
+
+      ratings.forEach((r) => {
+        distribution[r.rating] += 1;
+      });
+
+      return {
+        _id: member._id,
+        username: member.username,
+        email: member.email,
+        ratings,
+        totalRatings,
+        averageRating: Number(averageRating.toFixed(2)),
+        distribution, // ⭐ used for admin detailed rating bars
+      };
+    });
+
+    res.status(200).json(staffWithStats);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error fetching staff' });
+    res.status(500).json({ message: "Server error fetching staff" });
   }
 };
 export const getStats=async (req,res)=>{
