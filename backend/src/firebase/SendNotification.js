@@ -49,7 +49,8 @@ async function sendNotification(token, title, body) {
     await admin.messaging().send(message);
     console.log(`Notification sent to token: ${token}`);
   } catch (err) {
-    console.error("Error sending notification:", err);
+    console.error("Firebase notification error:", err.message);
+    // Don't throw error - continue with email notification
   }
 }
 

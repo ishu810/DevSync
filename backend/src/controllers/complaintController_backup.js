@@ -79,7 +79,6 @@ export const submitComplaint = async (req, res) => {
         longitude: longitude ? Number(longitude) : undefined,
         address: address?.trim() || "",
       },
-      deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
     });
 
     // Clear Redis cache (admin + citizen complaint list)
