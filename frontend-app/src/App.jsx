@@ -18,7 +18,9 @@ import ComplaintForm from "./page/Citizen/ComplaintForm.jsx";
 import AdminDashboard from "./page/Admin/AdminDashboard.jsx";
 import StaffDashboard from "./page/Staff/StaffDashboard.jsx";
 import CitizenDashboard from "./page/Citizen/CitizenDashboard.jsx";
+import StaffPerformance from "./page/Admin/StaffPerformance.jsx";
 import ProtectedRoute from "./routes/protectedRoute.jsx";
+
 
 //Notification
 import Messaging from "./Firebase/Messaging.jsx";
@@ -242,6 +244,14 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path="/dashboard/admin/staff-performance"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <StaffPerformance />
             </ProtectedRoute>
           }
         />
