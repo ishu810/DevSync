@@ -17,13 +17,15 @@ export default function Login() {
     setError("");
 
     try {
+      console.log("logiingddffg");
+
       const res = await axiosInstance.post("/api/auth/login", formData);
 
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", JSON.stringify(res.data.user));
-
         const role = res.data.user.role;
+
         if (role === "admin") navigate("/dashboard/admin");
         else if (role === "staff") navigate("/dashboard/staff");
         else navigate("/dashboard/citizen");
@@ -31,7 +33,19 @@ export default function Login() {
         setError("Login failed. No token received.");
       }
     } catch (err) {
-      setError(err.response?.data?.msg || "Invalid credentials.");
+      // ---------------------------
+      // 🔥 RATE LIMIT HANDLING HERE
+      // ---------------------------
+      if (err.response?.status === 429) {
+        const msg =
+          err.response?.data?.message ||
+          "Too many attempts. Please try again later.";
+
+        alert(msg); // popup alert
+        setError(msg); // show in UI red text
+      } else {
+        setError(err.response?.data?.msg || "Invalid credentials.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -41,7 +55,8 @@ export default function Login() {
     <div className="relative min-h-screen flex items-center justify-center bg-black overflow-hidden">
 
       {/* GRID OVERLAY */}
-      <div className="absolute inset-0 opacity-[0.18] pointer-events-none"
+      <div
+        className="absolute inset-0 opacity-[0.18] pointer-events-none"
         style={{
           backgroundImage:
             "repeating-linear-gradient(45deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 38px)",
@@ -49,7 +64,8 @@ export default function Login() {
       ></div>
 
       {/* BACKGROUND IMAGE + DARK OVERLAY */}
-      <div className="absolute inset-0 bg-cover bg-center"
+      <div
+        className="absolute inset-0 bg-cover bg-center"
         style={{
           backgroundImage: `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)), url("/src/assets/powerranger-bg.jpg")`,
         }}

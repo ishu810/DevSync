@@ -3,6 +3,7 @@ import multer from 'multer';
 import storage from '../Configs/cloudinary.js';
 import { protect, authorizeRoles } from '../middlewares/auth.js';
 import Complaint from '../models/Complaint.js';
+import { rateLimiter } from '../middlewares/rateLimiter.js';
 
 import {
   submitComplaint,
@@ -20,7 +21,14 @@ const upload = multer({ storage });
 
 
 
-router.post('/', protect, upload.single('photo'), submitComplaint);
+// router.post('/', protect, upload.single('photo'), submitComplaint);
+router.post(
+  '/',
+  protect,
+  rateLimiter("submit_complaint", 3, 60),  // 10 complaints per minute
+  upload.single('photo'),
+  submitComplaint
+);
 
 router.get('/', protect, getComplaints);
 

@@ -73,8 +73,9 @@ export const registerUser = async (req, res) => {
 
 // login logic
 export const loginUser = async (req, res) => {
+  console.log("user login controller")
   const { identifier, password } = req.body;
-
+  console.log("hii")
   if (!identifier || !password ) {
     return res.status(400).json({
       msg: "Email/Username, password and tenant code are required",
@@ -82,15 +83,16 @@ export const loginUser = async (req, res) => {
   }
 
   try {
-
+    console.log(identifier)
     const query = isEmail(identifier)
       ? { email: identifier.trim().toLowerCase() }
       : { username: identifier.trim() };
-
+     console.log(query)
     const user = await User.findOne({
       ...query,
       
     });
+     console.log(user)
 
     if (!user) {
       return res.status(400).json({ msg: "Invalid Credentials" });
