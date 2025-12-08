@@ -14,14 +14,14 @@ const activatePowerGrid = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
 
-    await Tenant.deleteMany(); // ⚠️ Optional — remove if not wanted
+    await Tenant.deleteMany(); 
 
     await Tenant.insertMany(powerGrid);
 
-    console.log("⚡ Power Grid Activated (Tenants Seeded)");
+    console.log("Power Grid Activated (Tenants Seeded)");
     process.exit(0);
   } catch (err) {
-    console.error("❌ Power Grid Activation Failed:", err);
+    console.error("Power Grid Activation Failed:", err);
     process.exit(1);
   }
 };

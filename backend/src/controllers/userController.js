@@ -15,8 +15,6 @@ export const getAllStaff = async (req, res) => {
         totalRatings > 0
           ? ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings
           : 0;
-
-      // Create star distribution (1–5 stars)
       const distribution = {
         1: 0,
         2: 0,
@@ -36,7 +34,7 @@ export const getAllStaff = async (req, res) => {
         ratings,
         totalRatings,
         averageRating: Number(averageRating.toFixed(2)),
-        distribution, // ⭐ used for admin detailed rating bars
+        distribution, 
       };
     });
 

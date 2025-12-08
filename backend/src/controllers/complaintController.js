@@ -92,9 +92,7 @@ export const submitComplaint = async (req, res) => {
   }
 };
 
-/* ===========================
-   GET COMPLAINTS (ALL ROLES)
-=========================== */
+
 export const getComplaints = async (req, res) => {
   try {
     if (!req.user?.id) {
@@ -131,7 +129,7 @@ export const assignComplaint = async (req, res) => {
   console.log("Hi");
 
   try {
-    const { complaintId, staffId } = req.body; // Moved to the beginning of the try block
+    const { complaintId, staffId } = req.body; 
 
     if (req.user.role !== "admin") {
       return res.status(403).json({
@@ -140,7 +138,7 @@ export const assignComplaint = async (req, res) => {
       });
     }
 
-    const staffUserForCheck = await User.findOne({ // Renamed to avoid redeclaration
+    const staffUserForCheck = await User.findOne({ 
       _id: staffId,
       role: "staff",
       tenantId: req.user.tenantId,
@@ -263,7 +261,7 @@ export const updateComplaintStatus = async (req, res) => {
       });
     }
 
-    // ✅ Staff can only update their assigned complaints
+    // Staff can only update their assigned complaints
     if (
       req.user.role === "staff" &&
       String(complaint.assigned_to) !== req.user.id

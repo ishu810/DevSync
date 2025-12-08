@@ -35,7 +35,6 @@ app.get('/', (req, res) => {
   res.send('Server is working');
 });
 
-// Mount routes ONLY ONCE
 app.use('/api/auth', authRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use("/api/dashboard", dashboardRoutes);
@@ -46,7 +45,7 @@ app.post("/api/v1/save-token",saveNotificationToken)
 // })
 app.post('/api/users/:id/rate', protect, async (req, res) => {
   const staffId = req.params.id;
-  const raterId = req.user._id;  // assuming auth middleware sets req.user
+  const raterId = req.user._id; 
   const { rating } = req.body;
   console.log(rating);
   console.log("staffid",staffId)

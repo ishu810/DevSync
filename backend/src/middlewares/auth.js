@@ -8,7 +8,7 @@ export const protect = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded.user; // must match JWT payload
+    req.user = decoded.user;
     next();
   } catch (err) {
     res.status(401).json({ msg: 'Token is not valid' });
@@ -17,7 +17,6 @@ export const protect = (req, res, next) => {
 
 
 
-// Role-based access middleware
 export const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) return res.status(401).json({ msg: 'Not authenticated' });

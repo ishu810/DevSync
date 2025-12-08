@@ -33,11 +33,9 @@ export const registerUser = async (req, res) => {
         .json({ msg: 'Admin already exists with that email or username.' });
     }
 
-    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new user
     const user = new User({
       username,
       email,
@@ -49,7 +47,6 @@ export const registerUser = async (req, res) => {
     await user.save();
     console.log("saved")
 
-    // Create JWT
     const payload = {
        user: { id: user._id, role: user.role, username: user.username,  tenantId: user.tenantId },
      };
