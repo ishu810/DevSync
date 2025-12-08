@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import Complaint from '../models/Complaint.js';
+import redisClient from "../Configs/redisClient.js";
 import bcrypt from "bcryptjs";
 
 export const getAllStaff = async (req, res) => {
@@ -66,17 +67,29 @@ export const getStats=async (req,res)=>{
 
 };
 export const getAdminStats = async (req, res) => {
- try {
-     const tenantId = req.user.tenantId;
+  try {
+    const tenantId = req.user.tenantId;
     const filter = { tenantId };
-    //  Total complaints for the tenant
+
+    // --- REDIS CACHE KEY ---
+    const cacheKey = `admin_stats_${tenantId}`;
+
+    // --- CHECK CACHE ---
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      return res.json({
+        cached: true,
+        ...JSON.parse(cached)
+      });
+    }
+
+    // --- IF NOT CACHED → RUN DB QUERIES ---
     const total = await Complaint.countDocuments(filter);
 
-    //  Status counts
-    const open = await Complaint.countDocuments({...filter, status: "OPEN" });
-    const inProgress = await Complaint.countDocuments({ ...filter,status: "IN_PROGRESS" });
-    const closed = await Complaint.countDocuments({...filter,status: "CLOSED" });
-    const resolved = await Complaint.countDocuments({...filter, status: "RESOLVED" });
+    const open = await Complaint.countDocuments({ ...filter, status: "OPEN" });
+    const inProgress = await Complaint.countDocuments({ ...filter, status: "IN_PROGRESS" });
+    const closed = await Complaint.countDocuments({ ...filter, status: "CLOSED" });
+    const resolved = await Complaint.countDocuments({ ...filter, status: "RESOLVED" });
 
     const slaViolations = await Complaint.countDocuments({
       ...filter,
@@ -85,27 +98,27 @@ export const getAdminStats = async (req, res) => {
     });
 
     const byCategory = await Complaint.aggregate([
-      {$match:filter},
+      { $match: filter },
       { $group: { _id: "$category", count: { $sum: 1 } } }
     ]);
 
     const byEngineer = await Complaint.aggregate([
-      { $match: { ...filter,assigned_to: { $ne: null } } },
+      { $match: { ...filter, assigned_to: { $ne: null } } },
       { $group: { _id: "$assigned_to", count: { $sum: 1 } } }
     ]);
 
     const dailyTrend = await Complaint.aggregate([
-       {$match:filter},
+      { $match: filter },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          count: { $sum: 1 },
-        },
+          count: { $sum: 1 }
+        }
       },
       { $sort: { _id: 1 } }
     ]);
 
-    res.json({
+    const stats = {
       total,
       open,
       inProgress,
@@ -115,6 +128,14 @@ export const getAdminStats = async (req, res) => {
       byCategory,
       byEngineer,
       dailyTrend
+    };
+
+    // --- SAVE TO REDIS FOR 5 MINUTES ---
+    await redisClient.setEx(cacheKey, 300, JSON.stringify(stats));
+
+    res.json({
+      cached: false,
+      ...stats
     });
 
   } catch (err) {
@@ -122,6 +143,7 @@ export const getAdminStats = async (req, res) => {
     res.status(500).json({ msg: "Failed to load admin stats" });
   }
 };
+
 export const getStaffStats = async (req, res) => {
   try {
     const staffId = req.user.id;
