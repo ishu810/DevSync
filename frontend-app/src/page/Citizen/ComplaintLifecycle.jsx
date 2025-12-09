@@ -1,6 +1,7 @@
 // src/page/Citizen/ComplaintLifecycle.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import axiosInstance from "../../api/axiosInstance";
 import { Rating } from "@smastrom/react-rating";
 import "@smastrom/react-rating/style.css";
 
@@ -8,17 +9,21 @@ export default function ComplaintLifecycle() {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [timeLefts, setTimeLefts] = useState({});
 
-  // ratings state persists via localStorage
+  const [editComplaint, setEditComplaint] = useState(null);
+  const [editImagePreview, setEditImagePreview] = useState(null);
+  const [editImageFile, setEditImageFile] = useState(null);
+
+  const [timeLefts, setTimeLefts] = useState({});
   const [ratings, setRatings] = useState(() => {
     try {
-      const ls = localStorage.getItem("complaintRatings");
-      return ls ? JSON.parse(ls) : {};
+      return JSON.parse(localStorage.getItem("complaintRatings")) || {};
     } catch {
       return {};
     }
   });
+
+  /* ---------------- FETCH COMPLAINTS ---------------- */
 
   const fetchComplaints = async () => {
     setLoading(true);
@@ -35,14 +40,20 @@ export default function ComplaintLifecycle() {
       const res = await axios.get("http://localhost:5000/api/complaints", {
         headers: { "x-auth-token": token },
       });
+
       const data = Array.isArray(res.data) ? res.data : [];
       setComplaints(data);
 
       // SLA timer
       const initialTimes = {};
+      // SLA timers
+      const timers = {};
       data.forEach((c) => {
-        initialTimes[c._id] = calculateTimeLeft(c.deadline);
+        timers[c._id] = calculateTimeLeft(c.deadline);
       });
+
+
+
       setTimeLefts(initialTimes);
 
       const backendRatings = {};
@@ -69,9 +80,12 @@ export default function ComplaintLifecycle() {
         localStorage.setItem("complaintRatings", JSON.stringify(merged));
       } catch {  }
 
+
+
+      
+      setTimeLefts(timers);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch complaints");
-      setComplaints([]);
     } finally {
       setLoading(false);
     }
@@ -81,7 +95,8 @@ export default function ComplaintLifecycle() {
     fetchComplaints();
   }, []);
 
-  // SLA countdown timer
+  /* ---------------- SLA COUNTDOWN ---------------- */
+
   useEffect(() => {
     const interval = setInterval(() => {
       const updated = {};
@@ -90,8 +105,72 @@ export default function ComplaintLifecycle() {
       });
       setTimeLefts(updated);
     }, 1000);
+
     return () => clearInterval(interval);
   }, [complaints]);
+
+  /* ---------------- CRUD ---------------- */
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this complaint?")) return;
+    await axiosInstance.delete(`/api/complaints/${id}`);
+    setComplaints((prev) => prev.filter((c) => c._id !== id));
+  };
+
+  const saveEdit = async () => {
+    const formData = new FormData();
+    formData.append("title", editComplaint.title);
+    formData.append("description", editComplaint.description);
+    formData.append("category", editComplaint.category);
+    formData.append("priority", editComplaint.priority);
+
+    if (editImageFile) {
+      formData.append("photo", editImageFile);
+    }
+
+    const res = await axiosInstance.patch(
+      `/api/complaints/${editComplaint._id}`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+
+    setComplaints((prev) =>
+      prev.map((c) => (c._id === res.data.complaint._id ? res.data.complaint : c))
+    );
+
+    setEditComplaint(null);
+    setEditImageFile(null);
+    setEditImagePreview(null);
+  };
+
+  /* ---------------- RATINGS ---------------- */
+
+  // const submitRating = async (complaintId, rating) => {
+  //   const token = localStorage.getItem("token");
+  //   const complaint = complaints.find((c) => c._id === complaintId);
+
+  //   if (!token || !complaint?.assigned_to?._id) return;
+
+  //   try {
+  //     await axios.post(
+  //       `http://localhost:5000/api/users/${staffId}/rate`,
+  //       { rating: ratingToSubmit },
+  //       { headers: { "x-auth-token": token } }
+  //     );
+  //     alert("Rating submitted successfully!");
+  //     await fetchComplaints(); 
+  //   } catch (err) {
+  //     console.error("Error submitting rating:", err);
+  //     alert(err.response?.data?.message || "Failed to submit rating");
+  //   }
+  //   // await axios.post(
+  //   //   `http://localhost:5000/api/users/${complaint.assigned_to._id}/rate`,
+  //   //   { rating },
+  //   //   { headers: { "x-auth-token": token } }
+  //   // );
+
+  //   setRatings((prev) => ({ ...prev, [complaintId]: rating }));
+  // };
 
   const handleRatingChange = (complaintId, newRating) => {
     setRatings((prev) => {
@@ -130,106 +209,120 @@ export default function ComplaintLifecycle() {
         { rating: ratingToSubmit },
         { headers: { "x-auth-token": token } }
       );
-      alert("Rating submitted successfully!");
+      // alert("Rating submitted successfully!");
       await fetchComplaints(); 
     } catch (err) {
       console.error("Error submitting rating:", err);
-      alert(err.response?.data?.message || "Failed to submit rating");
+      // alert(err.response?.data?.message || "Failed to submit rating");
     }
   };
 
-  if (loading) {
-    return <p className="text-[#B4FF5A] font-semibold text-lg">Loading complaints...</p>;
-  }
+  /* ---------------- LOADING / ERROR ---------------- */
 
-  if (error) {
+  if (loading)
+    return <p className="text-[#B4FF5A]">Loading complaints...</p>;
+
+  if (error)
     return (
       <div className="text-[#B4FF5A]">
-        <p>Error: {error}</p>
-        <button
-          onClick={fetchComplaints}
-          className="mt-3 px-4 py-2 bg-[#3CFF8F]/20 text-white font-semibold border border-[#3CFF8F]/40 rounded-xl hover:bg-[#3CFF8F]/30 transition"
-        >
-          Retry
-        </button>
+        <p>{error}</p>
+        <button onClick={fetchComplaints}>Retry</button>
       </div>
     );
-  }
+
+  /* ---------------- UI ---------------- */
 
   return (
-    <div className="space-y-5 mt-4">
-      {complaints.length === 0 ? (
-        <p className="text-[#3CFF8F]">No complaints submitted yet.</p>
-      ) : (
-        complaints.map((c) => {
+    <>
+      <div className="space-y-5 mt-4">
+        {complaints.map((c) => {
           const timeLeft = timeLefts[c._id];
-          const storedRating = ratings[c._id];
+
           return (
-            <div
-              key={c._id}
-              className="bg-white/10 backdrop-blur-xl rounded-2xl border border-[#3CFF8F]/40 shadow p-6 text-white"
-            >
-              <h3 className="text-xl font-bold mb-2">{c.title}</h3>
-              <p className="text-gray-200 mb-3">{c.description}</p>
-              <p className="text-[#B4FF5A] text-sm mb-1">
-                <span className="font-semibold">Status:</span> {c.status || "OPEN"}
-              </p>
+            <div key={c._id} className="bg-white/10 p-6 rounded-xl">
+              <h3 className="text-xl font-bold">{c.title}</h3>
+              <p>{c.description}</p>
+
+              <p>Status: {c.status}</p>
+
               {timeLeft && (
-                <p className={`mt-2 font-semibold ${timeLeft.total <= 0 ? "text-red-500" : "text-yellow-400"}`}>
-                  Deadline: { timeLeft.total > 0
+                <p className={timeLeft.total <= 0 ? "text-red-500" : "text-yellow-400"}>
+                  {timeLeft.total > 0
                     ? `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s`
-                    : "Deadline passed"
-                  }
+                    : "Deadline passed"}
                 </p>
-              )}
-              {c.submitted_by && (
-                <p className="text-gray-300 text-sm mb-1">
-                  Submitted by: {c.submitted_by.username} ({c.submitted_by.email})
-                </p>
-              )}
-              {c.createdAt && (
-                <p className="text-gray-400 text-xs mb-3">{new Date(c.createdAt).toLocaleString()}</p>
-              )}
-              {c.photo_url && (
-                <img
-                  src={c.photo_url}
-                  alt="Complaint"
-                  className="w-full mt-3 rounded-xl border shadow-lg"
-                />
               )}
 
-              {storedRating != null ? (
-                <p className="mt-4 text-yellow-300">You rated staff: {storedRating} ★</p>
-              ) : (
-                <div className="mt-4 flex items-center space-x-3">
-                  <Rating
-                    style={{ maxWidth: 120 }}
-                    value={ratings[c._id] || 0}
-                    onChange={(newRating) => {
-                      handleRatingChange(c._id, newRating);
-                      submitRating(c._id, newRating);
-                    }}
-                  />
+              {c.status === "OPEN" && (
+                <div className="flex gap-2 mt-3">
+                  <button onClick={() => setEditComplaint(c)}>Edit</button>
+                  <button onClick={() => handleDelete(c._id)}>Delete</button>
                 </div>
               )}
+
+              <Rating
+                style={{ maxWidth: 120 }}
+                value={ratings[c._id] || 0}
+                onChange={
+                  (r) => {submitRating(c._id, r);
+                    handleRatingChange(c._id,r)
+                  }
+
+                }
+              />
             </div>
           );
-        })
+        })}
+      </div>
+
+      {/* EDIT MODAL */}
+      {editComplaint && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
+          <div className="bg-[#00160D] p-6 rounded-xl w-[450px]">
+            <input
+              value={editComplaint.title}
+              onChange={(e) =>
+                setEditComplaint({ ...editComplaint, title: e.target.value })
+              }
+            />
+
+            <textarea
+              value={editComplaint.description}
+              onChange={(e) =>
+                setEditComplaint({ ...editComplaint, description: e.target.value })
+              }
+            />
+
+            <input
+              type="file"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                setEditImageFile(file);
+                setEditImagePreview(URL.createObjectURL(file));
+              }}
+            />
+
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setEditComplaint(null)}>Cancel</button>
+              <button onClick={saveEdit}>Save</button>
+            </div>
+          </div>
+        </div>
       )}
-    </div>
+    </>
   );
 }
 
+/* ---------------- UTIL ---------------- */
+
 function calculateTimeLeft(deadline) {
-  if (!deadline) return { total: 0, days: 0, hours: 0, minutes: 0, seconds: 0 };
-  const now = Date.now();
-  const target = new Date(deadline).getTime();
-  const diff = target - now;
+  if (!deadline) return { total: 0 };
+  const diff = new Date(deadline) - Date.now();
   return {
     total: diff,
-    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-    minutes: Math.floor((diff / (1000 * 60)) % 60),
+    days: Math.floor(diff / 86400000),
+    hours: Math.floor((diff / 3600000) % 24),
+    minutes: Math.floor((diff / 60000) % 60),
     seconds: Math.floor((diff / 1000) % 60),
   };
 }

@@ -49,7 +49,7 @@ app.post('/api/users/:id/rate', protect, async (req, res) => {
   const raterId = req.user._id; 
   const { rating } = req.body;
   console.log(rating);
-  console.log("staffid",staffId)
+  console.log("staffid",staffId, 'typeof:', typeof staffId)
   console.log("userid",raterId)
   if (typeof rating !== 'number' || rating < 1 || rating > 5) {
     return res.status(400).json({ message: 'Invalid rating value' });

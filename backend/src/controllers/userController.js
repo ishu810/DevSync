@@ -284,7 +284,11 @@ import User from '../models/User.js';
 import Complaint from '../models/Complaint.js';
 import redisClient from "../Configs/redisClient.js";
 import bcrypt from "bcryptjs";
-// import { taskQueue } from "../queues/queue.js";  // Uncomment if you want welcome emails
+// import { sendEmail } from '../firebase/SendNotification.js';
+import fs from "fs";
+import csv from "csv-parser";
+
+
 export const getAllStaff = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
@@ -543,4 +547,94 @@ export const adminCreateUser = async (req, res) => {
     email: user.email,
     role: user.role,
   });
+};
+// export const hi = async (req, res) => {
+//   console.log("hi");
+//   res.send("hi");
+// };
+
+export const bulkCreateUsers = async (req, res) => {
+  console.log("yes")
+  if (!req.file) {
+    return res.status(400).json({ msg: "CSV file required" });
+  }
+
+  const rows = [];
+  const tenantId = req.user.tenantId;
+
+  fs.createReadStream(req.file.path)
+    .pipe(csv())
+    .on("data", (row) => {
+      if (row.email && row.username) {
+        rows.push(row);
+      }
+    })
+    .on("end", async () => {
+      try {
+        const usersToInsert = [];
+        const emailQueue = [];
+
+        for (const row of rows) {
+          const plainPassword = Math.random().toString(36).slice(-10);
+          const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+          usersToInsert.push({
+            username: row.username.trim(),
+            email: row.email.trim().toLowerCase(),
+            role: row.role || "citizen",
+            password: hashedPassword,
+            tenantId,
+          });
+
+          emailQueue.push({
+            email: row.email,
+            username: row.username,
+            password: plainPassword,
+          });
+        }
+
+        const createdUsers = await User.insertMany(usersToInsert, {
+          ordered: false,
+        });
+
+       
+        for (const u of emailQueue) {
+          await sendEmail(
+            u.email,
+            "Your DevSync Account",
+            `Your account is ready`,
+            `
+            <h3>Welcome to DevSync</h3>
+            <p><b>Username:</b> ${u.username}</p>
+            <p><b>Password:</b> ${u.password}</p>
+            <p>Please login and change your password immediately.</p>
+            `
+          );
+        }
+
+        return res.json({
+          success: true,
+          created: createdUsers.length,
+        });
+      } catch (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Bulk upload failed" });
+      }
+    });
+};
+export const saveFcmToken = async (req, res) => {
+  try {
+    const { fcmToken } = req.body;
+    if (!fcmToken) return res.status(400).json({ message: "Token missing" });
+
+    await User.findByIdAndUpdate(req.user.id, {
+      fcmToken,
+      tokenUpdatedAt: new Date(),
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Save token error", err);
+    res.status(500).json({ message: "Server error" });
+  }
 };

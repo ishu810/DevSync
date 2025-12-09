@@ -14,10 +14,10 @@ const CreateUserForm = ({ onCreated }) => {
     e.preventDefault();
     try {
       await axiosInstance.post("/api/users", form);
-      alert("✅ User created successfully");
+      alert("User created successfully");
       onCreated();
     } catch (err) {
-      alert(err.response?.data?.msg || "Failed to create user");
+      alert(err.response?.data?.msg || " user created");
     }
   };
 

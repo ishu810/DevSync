@@ -1,0 +1,11 @@
+pymongo
+python-dotenv
+fastapi
+uvicorn[standard]
+sentence-transformers
+qdrant-client[fastembed]
+qdrant-client
+pymongo[srv]
+torch
+pydantic
+requests
