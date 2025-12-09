@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import StatCard from "../../components/StatCard";
 import CreateUserForm from "../../components/CreateUserForm";
 import BulkUserUpload from "../../components/BulkUserUpload";
+import ComplaintsChart from "../../components/ComplaintChart";
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
@@ -309,6 +310,7 @@ const AdminDashboard = () => {
                 <StatCard label="SLA Violations" value={stats.slaViolations} color="#FF0000" />
               </div>
             )}
+            
             {/* ASSIGN COMPLAINT CARD */}
             <div className="bg-white/10 backdrop-blur-xl border border-white/20 mt-10 shadow-2xl rounded-2xl p-6 mb-10">
               <h2 className="font-orbitron text-xl mb-4 text-yellow-400">Assign Complaints</h2>
@@ -369,6 +371,11 @@ const AdminDashboard = () => {
                   Assign
                 </button>
               </div>
+            </div>
+            
+            {/* Complaints Chart */}
+            <div className="mb-10">
+              <ComplaintsChart complaints={complaints} />
             </div>
           </>
         )}

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -14,20 +15,60 @@ const ComplaintForm = () => {
   });
 
   const [preview, setPreview] = useState(null);
+  const [locationError, setLocationError] = useState(null);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
-  useEffect(() => {
+  const getCurrentLocation = () => {
     if (!navigator.geolocation) {
-      alert("Geolocation not supported");
+      setLocationError("Geolocation is not supported by your browser");
       return;
     }
+
+    setIsGettingLocation(true);
+    setLocationError(null);
+
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000, // 10 seconds
+      maximumAge: 0 // Don't use cached position
+    };
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
         setFormData((prev) => ({ ...prev, latitude, longitude }));
+        setLocationError(null);
+        setIsGettingLocation(false);
       },
-      () => alert("Please enable location access.")
+      (error) => {
+        setIsGettingLocation(false);
+        let errorMessage = "Unable to get your location. ";
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += "Location access was denied. Please click the button again and allow location access when prompted, or enable it in your browser settings.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += "Location information is unavailable.";
+            break;
+          case error.TIMEOUT:
+            errorMessage += "Location request timed out. Please try again.";
+            break;
+          default:
+            errorMessage += "An unknown error occurred.";
+            break;
+        }
+        
+        setLocationError(errorMessage);
+      },
+      options
     );
+  };
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser");
+    }
   }, []);
 
   const handleChange = (e) => {
@@ -41,21 +82,14 @@ const ComplaintForm = () => {
   };
 
   const refreshLocation = () => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setFormData((prev) => ({ ...prev, latitude, longitude }));
-        alert("Location updated!");
-      },
-      () => alert("Unable to refresh location")
-    );
+    getCurrentLocation();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.latitude || !formData.longitude) {
-      alert("Location needed");
+      alert("Location is required. Please click 'Confirm / Update Location' to get your current location.");
       return;
     }
 
@@ -91,8 +125,8 @@ const ComplaintForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center p-4 font-poppins">
-      <div className="bg-white rounded-xl p-8 shadow-2xl w-full max-w-md">
+    <div className="min-h-screen overflow-y-auto flex justify-center items-start p-4 font-poppins bg-gray-100">
+      <div className="bg-white rounded-xl p-8 shadow-2xl w-full max-w-md max-h-screen overflow-y-auto">
         <h2 className="text-center text-2xl font-semibold text-green-900 mb-6">
           Submit a Complaint
         </h2>
@@ -108,9 +142,7 @@ const ComplaintForm = () => {
               onChange={handleChange}
               placeholder="Complaint Title"
               required
-              className="w-full p-3 border border-green-700 rounded-lg 
-              text-black placeholder-gray-600
-              focus:ring-2 focus:ring-green-500 outline-none"
+              className="w-full p-3 border border-green-700 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-black"
             />
           </div>
 
@@ -123,9 +155,7 @@ const ComplaintForm = () => {
               rows="5"
               required
               placeholder="Complaint Description"
-              className="w-full p-3 border border-green-700 rounded-lg 
-              text-black placeholder-gray-600
-              focus:ring-2 focus:ring-green-500 outline-none"
+              className="w-full p-3 border border-green-700 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-black"
             />
           </div>
 
@@ -135,8 +165,7 @@ const ComplaintForm = () => {
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className="w-full p-3 border border-green-700 rounded-lg 
-              text-black bg-white focus:ring-2 focus:ring-green-500 outline-none"
+              className="w-full p-3 border border-green-700 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-black"
             >
               <option>Infrastructure</option>
               <option>Sanitation</option>
@@ -152,8 +181,7 @@ const ComplaintForm = () => {
               name="priority"
               value={formData.priority}
               onChange={handleChange}
-              className="w-full p-3 border border-green-700 rounded-lg 
-              text-black bg-white"
+              className="w-full p-3 border border-green-700 rounded-lg text-black"
             >
               <option>Low</option>
               <option>Medium</option>
@@ -170,8 +198,7 @@ const ComplaintForm = () => {
               value={formData.address}
               onChange={handleChange}
               placeholder="Your Address"
-              className="w-full p-3 border border-green-700 rounded-lg 
-              text-black placeholder-gray-600"
+              className="w-full p-3 border border-green-700 rounded-lg text-black"
             />
           </div>
 
@@ -184,11 +211,12 @@ const ComplaintForm = () => {
               onChange={handlePhotoChange}
               className="mt-1"
             />
+
             {preview && (
               <img
                 src={preview}
                 alt="Preview"
-                className="w-full mt-2 rounded-lg shadow"
+                className="w-full mt-2 rounded-lg shadow max-h-60 object-cover"
               />
             )}
           </div>
@@ -204,21 +232,27 @@ const ComplaintForm = () => {
           <button
             type="button"
             onClick={refreshLocation}
-            className="w-full bg-green-300 text-green-900 py-2 rounded-lg 
-            font-semibold hover:bg-green-400 transition"
+            disabled={isGettingLocation}
+            className={`w-full py-2 rounded-lg font-semibold transition ${
+              isGettingLocation
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-green-300 text-green-900 hover:bg-green-400"
+            }`}
           >
-            Confirm / Update Location
+            {isGettingLocation 
+              ? "Getting Location..." 
+              : formData.latitude && formData.longitude
+              ? "Update Location"
+              : "Allow Location Access"}
           </button>
 
           {/* ************ */}
           <button
             type="submit"
-            className="w-full bg-green-800 text-white py-3 rounded-lg 
-            font-bold hover:bg-green-600 transition"
+            className="w-full bg-green-800 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition"
           >
             Submit Complaint
           </button>
-
         </form>
       </div>
     </div>

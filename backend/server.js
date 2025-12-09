@@ -21,6 +21,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 
+import commentRoutes from "./src/routes/commentRoutes.js"
+// import saveNotificationToken from "./src/firebase/routes.js"
 const app = express();
 console.log(">>> THIS SERVER FILE IS RUNNING:", __filename);
 console.log(">>> WORKING DIRECTORY:", process.cwd());
@@ -54,6 +56,11 @@ app.post('/api/users/:id/rate', protect, async (req, res) => {
   if (typeof rating !== 'number' || rating < 1 || rating > 5) {
     return res.status(400).json({ message: 'Invalid rating value' });
   }
+// app.use("/api/v1/save-token",saveNotificationToken)
+
+app.use("/api/comments", commentRoutes);
+
+
 
   try {
     const staff = await User.findById(staffId);

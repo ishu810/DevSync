@@ -25,4 +25,7 @@ router.post("/", protect, authorizeRoles("admin"), adminCreateUser);
 router.post("/bulk-upload",protect,authorizeRoles("admin"),upload.single("file"),bulkCreateUsers);
 
 
+// Route to get admin statistics (admin only)
+router.get('/admin/stats', protect, authorizeRoles('admin'), getAdminStats);
+
 export default router;
